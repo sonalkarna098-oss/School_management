@@ -322,18 +322,24 @@ def delete_mark(id):
 
 @app.route("/update_marks", methods=["POST"])
 def update_marks():
-    if session.get("user_role") != "teacher": return "Unauthorized", 403
+    if session.get("user_role") != "teacher": 
+        return "Unauthorized", 403
+    
     mark_id = request.form.get("id")
+    # Using .get() prevents the KeyError crash
+    class_val = request.form.get("class") 
+    
     db.marks.update_one(
         {"_id": ObjectId(mark_id)},
         {"$set": {
-            "subject": request.form["subject"],
-            "marks": request.form["marks"],
-            "exam": request.form["exam"]
+            "subject": request.form.get("subject"),
+            "marks": request.form.get("marks"),
+            "exam": request.form.get("exam")
         }}
     )
-    return redirect(url_for("marks", class_no=request.form["class"]))
-
+    
+    # Redirect back to the filtered marks page
+    return redirect(url_for("marks", class_no=class_val))
 # ================= TIMETABLE =================
 @app.route("/timetable", methods=["GET","POST"])
 def timetable():
@@ -437,6 +443,10 @@ def apply():
     }
     db.applications.insert_one(application_data)
     return redirect(url_for('careers'))
+
+
+# if __name__=="__main__":
+#     app.run(debug=True)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))

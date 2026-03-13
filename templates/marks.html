@@ -2,30 +2,15 @@
 {% block content %}
 
 <style>
-    /* Styling for the header gradient and rounded bottom */
     .marks-header { 
         background: linear-gradient(135deg, #0d47a1, #1976d2); 
-        color: white; 
-        padding: 60px 0; 
-        border-radius: 0 0 50px 50px; 
+        color: white; padding: 60px 0; border-radius: 0 0 50px 50px; 
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
-    
-    /* Hover effects for dashboard cards */
     .stat-card { border: none; border-radius: 15px; transition: 0.3s; cursor: pointer; }
     .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
-    
-    /* Table and Card styling */
     .table-card { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    
-    /* Input styling for marks entry */
-    .marks-input { 
-        width: 80px; 
-        text-align: center; 
-        font-weight: bold; 
-        border-radius: 8px; 
-        border: 1px solid #ddd;
-    }
+    .marks-input { width: 80px; text-align: center; font-weight: bold; border-radius: 8px; border: 1px solid #ddd; }
 </style>
 
 <div class="marks-header mb-5">
@@ -90,7 +75,7 @@
                         <th class="ps-4">Student Name</th>
                         <th>Subject</th>
                         <th>Exam Type</th>
-                        <th>Marks Obtained</th>
+                        <th>Marks</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
@@ -103,18 +88,16 @@
                         <td class="fw-bold text-primary">{{ m.marks }}</td>
                         <td class="text-end pe-4">
                             {% if session['user_role'] == 'teacher' %}
+                            <button class="btn btn-sm btn-outline-warning border-0 rounded-circle me-2" 
+                                    onclick="editMark('{{m._id}}', '{{m.student_name}}', '{{m.subject}}', '{{m.marks}}', '{{m.exam}}')">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
                             <a href="{{ url_for('delete_mark', id=m._id|string) }}" 
                                class="btn btn-sm btn-outline-danger border-0 rounded-circle" 
                                onclick="return confirm('Delete this record?')">
                                 <i class="bi bi-trash"></i>
                             </a>
                             {% endif %}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            Use filters above to display examination results.
                         </td>
                     </tr>
                     {% endfor %}
@@ -174,10 +157,57 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="editMarkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="/update_marks" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header bg-warning py-4" style="border-radius: 25px 25px 0 0;">
+                <h5 class="modal-title fw-bold">Update Student Mark</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" name="id" id="edit-m-id">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">STUDENT NAME</label>
+                    <input type="text" id="edit-m-name" class="form-control bg-light border-0" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">SUBJECT</label>
+                    <input type="text" name="subject" id="edit-m-subject" class="form-control bg-light border-0" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">MARKS</label>
+                        <input type="number" name="marks" id="edit-m-marks" class="form-control bg-light border-0" min="0" max="100" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">EXAM TYPE</label>
+                        <select name="exam" id="edit-m-exam" class="form-select bg-light border-0">
+                            <option value="Mid Term">Mid Term</option>
+                            <option value="Final Exam">Final Exam</option>
+                            <option value="Class Test">Class Test</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4">
+                <button type="submit" class="btn btn-warning rounded-pill px-5 fw-bold">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endif %}
 
 <script>
-// Dynamic student loading for marks entry
+function editMark(id, name, subject, marks, exam) {
+    document.getElementById('edit-m-id').value = id;
+    document.getElementById('edit-m-name').value = name;
+    document.getElementById('edit-m-subject').value = subject;
+    document.getElementById('edit-m-marks').value = marks;
+    document.getElementById('edit-m-exam').value = exam;
+    new bootstrap.Modal(document.getElementById('editMarkModal')).show();
+}
+
 document.getElementById('modalClassSelectMarks').addEventListener('change', function() {
     const className = this.value;
     const container = document.getElementById('studentListContainerMarks');
