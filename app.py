@@ -12,7 +12,7 @@ atlas_uri = os.getenv("MONGO_URLI")
 
 try:
     client = MongoClient(atlas_uri)
-    db = client["management"]
+    db = client["school"]
     # Verify connection
     client.admin.command('ping')
     print("Successfully connected to MongoDB Atlas (Database: management)")
