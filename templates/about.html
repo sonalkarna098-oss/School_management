@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid p-0 position-relative mb-5" style="
+    background-image: url('https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?auto=format&fit=crop&q=80&w=2000'); 
+    background-size: cover; 
+    background-position: center;
+    min-height: 40vh;
+    border-radius: 0 0 150px 0;
+    overflow: hidden;">
+    
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 0, 9, 0.6);"></div>
+    
+    <div class="container h-100 position-relative d-flex align-items-center" style="min-height: 55vh; z-index: 10;">
+        <div class="text-white">
+            <h6 class="text-warning fw-bold text-uppercase tracking-widest mb-3">Institutional Overview</h6>
+            <h1 class="display-3 fw-bold lh-1 mb-3">The <span style="border-bottom: 4px solid #ffc107;">SPSEBS</span> Way</h1>
+            <p class="lead opacity-90 mb-4">"Trust" - Excellence through innovation and academic legacy.</p>
+            <a href="{{ url_for('admission') }}" class="btn btn-warning rounded-pill px-5 py-2 fw-bold shadow">Apply Now</a>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <h2 class="text-primary fw-bold border-bottom pb-3 mb-4">Welcome to SPSEBS Institution</h2>
+            
+            <div class="row mb-5">
+                <div class="col-md-7">
+                    <p class="text-muted lh-lg">Welcome to the South Point S.E.C.  E.N.G. B.O.A.  SCHOOL portal. We hope to provide you an insight into our vibrant, creative, and happy institution and the exciting journey we're on to become outstanding.</p>
+                    <p class="text-muted lh-lg">We are committed to providing a vibrant and creative environment for technical excellence, ensuring all our students thrive during their time at SPSEBS.</p>
+                </div>
+                <div class="col-md-5">
+                    <div class="campus-frame shadow-sm">
+                        <img src="https://scontent.fvga9-1.fna.fbcdn.net/v/t1.6435-9/151204364_2859345684302093_5548813431492159651_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=7b2446&_nc_ohc=VrtDUIgDVjYQ7kNvwE5gqX6&_nc_oc=AdkTATuUxqRyz5vNRL3s_vIzkmwvaKUwd5EP7PJp6p7Q3PfKbK2K79BIU4zU0l_iTLw&_nc_zt=23&_nc_ht=scontent.fvga9-1.fna&_nc_gid=K0mS81IJ3TXJ3TX-vWvMBA&_nc_ss=8&oh=00_AfxOFybkR6WQvLHCgCUrw1_84gir_618KA3tdngvQ6qclg&oe=69D68350" class="img-fluid" alt="Campus Facilities">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100 p-4 border-0 shadow-sm transition-hover">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-eye fs-2 text-primary me-3"></i>
+                            <h5 class="fw-bold mb-0">Our Vision</h5>
+                        </div>
+                        <p class="text-muted small">To create a world-class center of excellence in Secondary education and research, empowering young minds with knowledge and values..</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 p-4 border-0 shadow-sm transition-hover">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-rocket-takeoff fs-2 text-success me-3"></i>
+                            <h5 class="fw-bold mb-0">Our Mission</h5>
+                        </div>
+                        <p class="text-muted small">To deliver quality secondary education using innovative learning approaches while nurturing knowledge, character, and essential life skills.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 mb-4 border-start border-5 border-maroon">
+                <h5 class="fw-bold text-dark mb-4">Institutional Credentials</h5>
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-award fs-3 text-maroon me-3"></i>
+                        <span class="small fw-bold">NBA & NAAC ACCREDITED</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-shield-check fs-3 text-maroon me-3"></i>
+                        <span class="small fw-bold">AUTONOMOUS STATUS</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-news shadow-sm p-4 text-white rounded mb-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-megaphone me-2"></i>Latest News</h5>
+                <div class="border-bottom border-white border-opacity-25 py-2 small"> receives NAAC A+ Grade Certification</div>
+                <div class="border-bottom border-white border-opacity-25 py-2 small">New Smart Institution features launched for 2026</div>
+                <a href="#" class="text-white mt-3 d-inline-block small fw-bold text-decoration-none">View Archive →</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-0 text-center text-white bg-dark shadow-lg overflow-hidden rounded mt-4">
+        <div class="col-md-3 border-end border-secondary border-opacity-25 p-4">
+            <h3 class="fw-bold text-warning mb-0">4,500+</h3>
+            <small class="text-uppercase tracking-widest smallest">Total Students</small>
+        </div>
+        <div class="col-md-3 border-end border-secondary border-opacity-25 p-4">
+            <h3 class="fw-bold text-warning mb-0">320+</h3>
+            <small class="text-uppercase tracking-widest smallest">Placements 2025</small>
+        </div>
+        <div class="col-md-3 border-end border-secondary border-opacity-25 p-4">
+            <h3 class="fw-bold text-warning mb-0">105</h3>
+            <small class="text-uppercase tracking-widest smallest">Doctoral Faculty</small>
+        </div>
+        <div class="col-md-3 p-4">
+            <h3 class="fw-bold text-warning mb-0">720</h3>
+            <small class="text-uppercase tracking-widest smallest">Highest Package</small>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tracking-widest { letter-spacing: 0.15rem; }
+    .text-maroon { color: #800000 !important; }
+    .border-maroon { border-color: #800000 !important; }
+    .smallest { font-size: 0.65rem; }
+    .bg-news { background-color: #92d050; }
+    .campus-frame { border: 1px solid #ddd; padding: 10px; background: white; border-radius: 8px; }
+    
+    .transition-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .transition-hover:hover { 
+        transform: translateY(-5px); 
+        box-shadow: 0 1rem 3rem rgba(0,0,0,0.12) !important; 
+    }
+</style>
+
+{% endblock %}

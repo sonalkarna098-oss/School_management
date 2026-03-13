@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid p-0 overflow-hidden">
+    <div class="row g-0 align-items-stretch" style="min-height: 85vh;">
+        
+        <div class="col-lg-5 bg-white d-flex align-items-center">
+            <div class="px-5 py-5 w-100">
+                <div class="ps-lg-5">
+                    <h6 class="text-danger fw-bold border-bottom border-danger d-inline-block pb-1 tracking-widest mb-4">
+                        MEET WITH #01 INSTITUTION
+                    </h6>
+                    
+                    <h1 class="display-3 fw-bold text-dark lh-1 mb-4">
+                        A leading educational <span style="color: #800000; border-bottom: 4px solid #800000;">institution</span> known for excellence
+                    </h1>
+                    
+                    <p class="lead text-muted mb-5 pe-lg-5">
+                       SOUTH POINT S.E.C E.N.G B.O.A SCHOOL (+2) (SPSEBS) is committed to providing a holistic education that blends academic excellence, ethical values, and leadership development to prepare students for success in higher education and beyond.
+                    </p>
+                    
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="#" class="btn btn-dark rounded-0 px-5 py-3 fw-bold shadow">
+                            APPLY NOW <i class="bi bi-arrow-up-right ms-2"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-dark rounded-0 px-5 py-3 fw-bold">
+                            PORTAL LOGIN
+                        </a>
+                    </div>
+                    
+                    <div class="mt-5 d-flex gap-4 opacity-75">
+                        <div class="text-center">
+                            <i class="bi bi-award fs-3"></i>
+                            <div class="small fw-bold">NBA & NAAC</div>
+                        </div>
+                        <div class="text-center">
+                            <i class="bi bi-shield-check fs-3"></i>
+                            <div class="small fw-bold">AUTONOMOUS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-7 position-relative d-none d-lg-block">
+            <div class="h-100 w-100" style="
+                background-image: url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=2000'); 
+                background-size: cover; 
+                background-position: center;">
+            </div>
+            <div class="position-absolute bottom-0 start-0 bg-white p-4 m-4 shadow-lg border-start border-5 border-danger">
+                <h4 class="fw-bold mb-1">25+ Years</h4>
+                <p class="text-muted small mb-0">of Academic Legacy</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5 my-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-dark">Portal Access Center</h2>
+        <div class="mx-auto bg-danger mt-3" style="width: 60px; height: 4px;"></div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm transition-hover text-center p-4">
+                <div class="card-body">
+                    <img src="https://cdn-icons-png.flaticon.com/512/206/206857.png" class="mb-4" style="width: 70px;">
+                    <h4 class="fw-bold">Employee Login</h4>
+                    <p class="text-muted small">Access management tools for faculty, attendance, and exam results.</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold mt-2">Sign In</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm transition-hover text-center p-4">
+                <div class="card-body">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135810.png" class="mb-4" style="width: 70px;">
+                    <h4 class="fw-bold">Student Login</h4>
+                    <p class="text-muted small">Review your academic progress, marks, and personal class schedules.</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-warning rounded-pill px-4 fw-bold mt-2">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tracking-widest { letter-spacing: 0.15rem; }
+    .transition-hover { transition: all 0.3s ease; }
+    .transition-hover:hover { transform: translateY(-10px); box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important; }
+</style>
+
+{% endblock %}

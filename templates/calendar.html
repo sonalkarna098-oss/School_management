@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    /* Professional Red/Maroon Gradient for Academic Urgency */
+    .calendar-header { 
+        background: linear-gradient(135deg, #800000, #c62828); 
+        color: white; 
+        padding: 60px 0; 
+        border-radius: 0 0 50px 50px; 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .table-card { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    
+    .stat-card { border: none; border-radius: 15px; transition: 0.3s; }
+    
+    .badge-exam { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    .badge-event { background-color: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+    .badge-academics { background-color: #fff8e1; color: #f57f17; border: 1px solid #ffecb3; }
+
+    .date-text { font-family: 'Courier New', monospace; font-weight: bold; color: #800000; }
+</style>
+
+<div class="calendar-header mb-5">
+    <div class="container text-center">
+        <h1 class="fw-bold">Academic Calendar</h1>
+        <p class="opacity-75">Planning, Examinations & Institutional Events</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            
+            {# 1. TEACHER ONLY: ADD EVENT BOX #}
+            {% if session['user_role'] == 'teacher' %}
+            <div class="card table-card shadow-sm p-4 mb-4 border-0 bg-white">
+                <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-calendar-plus me-2 text-danger"></i>Post New Academic Event</h5>
+                <form action="{{ url_for('add_calendar_event') }}" method="POST" class="row g-2">
+                  <div class="col-md-3">
+    <label class="small fw-bold text-muted">Date</label>
+    <input type="date" name="date" class="form-control bg-light border-0" 
+           value="{{ today_date }}" required>
+</div>
+                    <div class="col-md-5">
+                        <label class="small fw-bold text-muted">Description</label>
+                        <input type="text" name="description" class="form-control bg-light border-0" placeholder="e.g. Mid-Term Exams Start" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small fw-bold text-muted">Category</label>
+                        <select name="category" class="form-select bg-light border-0">
+                            <option value="Examination">Examination</option>
+                            <option value="Event">Event</option>
+                            <option value="Academics">Academics</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-danger w-100 fw-bold rounded-3">Post</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+            <div class="card table-card bg-white shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold mb-0">Scheduled Milestones</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted small text-uppercase">
+                            <tr>
+                                <th class="ps-4">Month / Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                {% if session['user_role'] == 'teacher' %}<th class="text-end pe-4">Action</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            <tr>
+                                <td class="ps-4 date-text">{{ event.date }}</td>
+                                <td class="fw-bold text-dark">{{ event.description }}</td>
+                                <td>
+                                    {% if event.category == 'Examination' %}
+                                        <span class="badge badge-exam px-3 py-2 rounded-pill">EXAMINATION</span>
+                                    {% elif event.category == 'Event' %}
+                                        <span class="badge badge-event px-3 py-2 rounded-pill">EVENT</span>
+                                    {% else %}
+                                        <span class="badge badge-academics px-3 py-2 rounded-pill">ACADEMICS</span>
+                                    {% endif %}
+                                </td>
+                                {% if session['user_role'] == 'teacher' %}
+                                <td class="text-end pe-4">
+                                    <a href="{{ url_for('delete_calendar_event', id=event._id|string) }}" 
+                                       class="btn btn-sm btn-outline-danger border-0 rounded-circle" 
+                                       onclick="return confirm('Remove this event from calendar?')">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </a>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="bi bi-calendar4-range fs-1 d-block mb-2"></i>
+                                    No upcoming events scheduled.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="text-end mb-5">
+                <button class="btn btn-dark btn-sm rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-file-earmark-pdf me-2"></i>Export Academic Schedule
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card stat-card border-0 border-start border-danger border-5 shadow-sm mb-4 bg-white">
+                <div class="card-body">
+                    <h5 class="fw-bold text-danger"><i class="bi bi-megaphone me-2"></i>Notice Desk</h5>
+                    <p class="small text-muted mb-0">
+                        Dates are subject to change based on JNTUK and Autonomous council notifications. 
+                        Please check the board daily for revisions.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm bg-dark text-white rounded-4 p-2">
+                <div class="card-body">
+                    <h5 class="fw-bold text-warning"><i class="bi bi-info-circle me-2"></i>Support</h5>
+                    <p class="small opacity-75 mb-0">
+                        For specific queries regarding end-semester schedules or results, 
+                        contact the **Office of the Controller of Examinations**.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

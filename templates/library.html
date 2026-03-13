@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-primary"><i class="fas fa-book-reader"></i> Digital Library Resources</h2>
+            <p class="text-muted">Access textbooks, past papers, and digital learning materials.</p>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search for books...">
+                <button class="btn btn-primary" type="button">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-center mb-5">
+        <div class="col-md-3">
+            <div class="p-3 border rounded bg-light">
+                <h4 class="mb-0">1,200+</h4>
+                <small class="text-muted">E-Books</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 border rounded bg-light">
+                <h4 class="mb-0">500+</h4>
+                <small class="text-muted">Past Papers</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 border rounded bg-light">
+                <h4 class="mb-0">150+</h4>
+                <small class="text-muted">Video Lessons</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 border rounded bg-light">
+                <h4 class="mb-0">Available</h4>
+                <small class="text-muted">Library Status</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="display-4 text-warning mb-3"><i class="fas fa-atlas"></i></div>
+                    <h5 class="card-title">Academic Textbooks</h5>
+                    <p class="card-text text-muted">Curriculum books for Grades 1 to 12 in PDF format.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">Browse Books</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="display-4 text-danger mb-3"><i class="fas fa-file-invoice"></i></div>
+                    <h5 class="card-title">Exam Resources</h5>
+                    <p class="card-text text-muted">Previous year question papers and marking schemes.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">View Papers</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="display-4 text-info mb-3"><i class="fas fa-video"></i></div>
+                    <h5 class="card-title">Multimedia Room</h5>
+                    <p class="card-text text-muted">Recorded lectures and interactive educational animations.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">Watch Now</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="display-4 text-success mb-3"><i class="fas fa-microscope"></i></div>
+                    <h5 class="card-title">Research & Reference</h5>
+                    <p class="card-text text-muted">Encyclopedias, journals, and dictionary resources.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">Explore</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="display-4 text-secondary mb-3"><i class="fas fa-user-graduate"></i></div>
+                    <h5 class="card-title">Career Corner</h5>
+                    <p class="card-text text-muted">Information on universities, scholarships, and careers.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 bg-dark text-white">
+                <div class="card-body text-center">
+                    <div class="display-4 text-light mb-3"><i class="fas fa-search-location"></i></div>
+                    <h5 class="card-title text-white">Book Tracker</h5>
+                    <p class="card-text opacity-75">Check if a physical book is currently in the school library.</p>
+                    <a href="#" class="btn btn-light btn-sm">Check Inventory</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card { transition: transform 0.2s; cursor: pointer; }
+    .card:hover { transform: translateY(-10px); }
+</style>
+{% endblock %}

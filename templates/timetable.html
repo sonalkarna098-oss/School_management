@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    /* Professional Header Gradient */
+    .timetable-header { 
+        background: linear-gradient(135deg, #4527a0, #7b1fa2); 
+        color: white; 
+        padding: 60px 0; 
+        border-radius: 0 0 50px 50px; 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Hover effects for dashboard cards */
+    .stat-card { border: none; border-radius: 15px; transition: 0.3s; cursor: pointer; }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    
+    /* Table and Card styling */
+    .table-card { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    
+    .table thead { background-color: #4527a0; color: white; }
+    .time-column { background-color: #f8f9fa; font-weight: bold; color: #4527a0; width: 150px; }
+</style>
+
+<div class="timetable-header mb-5">
+    <div class="container text-center">
+        <h1 class="fw-bold">Class Timetable</h1>
+        <p class="opacity-75">Schedule Management & Weekly Routine</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card stat-card bg-white p-4 shadow-sm text-center h-100">
+                <h6 class="text-muted text-uppercase small fw-bold">Active Week</h6>
+                <h3 class="fw-bold text-primary">Mon — Fri</h3>
+            </div>
+        </div>
+        
+        {% if session['user_role'] == 'teacher' %}
+        <div class="col-md-8">
+            <div class="card stat-card bg-dark text-white p-4 shadow-sm d-flex flex-row align-items-center justify-content-between h-100" 
+                 data-bs-toggle="modal" data-bs-target="#addTimetableModal">
+                <div>
+                    <h4 class="fw-bold mb-0">Add New Slot</h4>
+                    <p class="small opacity-75 mb-0">Define subjects and timings for class routines</p>
+                </div>
+                <i class="bi bi-calendar-plus fs-1 text-info"></i>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card table-card bg-light p-4 mb-4 border-0 shadow-sm">
+        <form method="GET" action="/timetable" class="row g-3 align-items-end">
+            <div class="col-md-9">
+                <label class="form-label small fw-bold text-uppercase text-muted">Select Class to View Schedule</label>
+                <select name="class_name" class="form-select border-0 shadow-sm py-2">
+                    <option value="">All Classes</option>
+                    {% for i in range(1,11) %}
+                    <option value="{{i}}" {% if selected_class == i|string %}selected{% endif %}>Class {{i}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">View Schedule</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card table-card bg-white shadow-sm mb-5">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="fw-bold mb-0 text-dark">Weekly Routine {% if selected_class %}(Class {{selected_class}}){% endif %}</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                        {% if session['user_role'] == 'teacher' %}
+                        <th>Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in timetable %}
+                    <tr>
+                        <td class="time-column border-end">{{ t.time }}</td>
+                        <td>{{ t.monday or '-' }}</td>
+                        <td>{{ t.tuesday or '-' }}</td>
+                        <td>{{ t.wednesday or '-' }}</td>
+                        <td>{{ t.thursday or '-' }}</td>
+                        <td>{{ t.friday or '-' }}</td>
+                        {% if session['user_role'] == 'teacher' %}
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-warning border-0" 
+                                        onclick="editTimetable('{{t._id}}', '{{t.class}}', '{{t.time}}', '{{t.monday}}', '{{t.tuesday}}', '{{t.wednesday}}', '{{t.thursday}}', '{{t.friday}}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <a href="{{ url_for('delete_timetable', id=t._id|string) }}" 
+                                   class="btn btn-sm btn-outline-danger border-0" 
+                                   onclick="return confirm('Delete this row?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-calendar-x fs-2 d-block mb-2"></i>
+                            No schedule found. Select a class to filter.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if session['user_role'] == 'teacher' %}
+<div class="modal fade" id="addTimetableModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header bg-dark text-white border-0 py-4" style="border-radius: 25px 25px 0 0;">
+                <h5 class="modal-title fw-bold px-3">Add New Schedule Row</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/timetable" method="POST">
+                <div class="modal-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Class</label>
+                            <select name="class" class="form-select bg-light border-0 py-2" required>
+                                {% for i in range(1,11) %}
+                                <option value="{{i}}">Class {{i}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Time Slot</label>
+                            <input type="text" name="time" class="form-control bg-light border-0 py-2" placeholder="e.g. 10:00 - 11:00" required>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col"><label class="form-label small">Mon</label><input type="text" name="monday" class="form-control bg-light border-0"></div>
+                        <div class="col"><label class="form-label small">Tue</label><input type="text" name="tuesday" class="form-control bg-light border-0"></div>
+                        <div class="col"><label class="form-label small">Wed</label><input type="text" name="wednesday" class="form-control bg-light border-0"></div>
+                        <div class="col"><label class="form-label small">Thu</label><input type="text" name="thursday" class="form-control bg-light border-0"></div>
+                        <div class="col"><label class="form-label small">Fri</label><input type="text" name="friday" class="form-control bg-light border-0"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4">
+                    <button type="submit" class="btn btn-success rounded-pill px-5 fw-bold">Add to Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editTimetableModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form action="/update_timetable" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header bg-warning py-4" style="border-radius: 25px 25px 0 0;">
+                <h5 class="modal-title fw-bold">Update Schedule Row</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" name="id" id="edit-t-id">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Class</label>
+                        <select name="class" id="edit-t-class" class="form-select bg-light border-0 py-2">
+                            {% for i in range(1,11) %}
+                            <option value="{{i}}">Class {{i}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Time Slot</label>
+                        <input type="text" name="time" id="edit-t-time" class="form-control bg-light border-0 py-2" required>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col"><label class="form-label small">Mon</label><input type="text" name="monday" id="edit-t-mon" class="form-control bg-light border-0"></div>
+                    <div class="col"><label class="form-label small">Tue</label><input type="text" name="tuesday" id="edit-t-tue" class="form-control bg-light border-0"></div>
+                    <div class="col"><label class="form-label small">Wed</label><input type="text" name="wednesday" id="edit-t-wed" class="form-control bg-light border-0"></div>
+                    <div class="col"><label class="form-label small">Thu</label><input type="text" name="thursday" id="edit-t-thu" class="form-control bg-light border-0"></div>
+                    <div class="col"><label class="form-label small">Fri</label><input type="text" name="friday" id="edit-t-fri" class="form-control bg-light border-0"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4">
+                <button type="submit" class="btn btn-warning rounded-pill px-5 fw-bold">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editTimetable(id, cls, time, mon, tue, wed, thu, fri) {
+    document.getElementById('edit-t-id').value = id;
+    document.getElementById('edit-t-class').value = cls;
+    document.getElementById('edit-t-time').value = time;
+    document.getElementById('edit-t-mon').value = mon;
+    document.getElementById('edit-t-tue').value = tue;
+    document.getElementById('edit-t-wed').value = wed;
+    document.getElementById('edit-t-thu').value = thu;
+    document.getElementById('edit-t-fri').value = fri;
+    new bootstrap.Modal(document.getElementById('editTimetableModal')).show();
+}
+</script>
+{% endif %}
+
+{% endblock %}

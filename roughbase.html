@@ -1,0 +1,310 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-5">
+    <div class="row justify-content-center g-5"> <div class="col-lg-4 col-md-6">
+            <div class="login-card employee shadow-lg">
+                <div class="login-header">EMPLOYEE LOGIN</div>
+                <div class="card-body d-flex flex-column justify-content-between p-4">
+                    <form action="{{ url_for('login') }}" method="POST" class="h-100 d-flex flex-column justify-content-between">
+                        <input type="hidden" name="role" value="teacher">
+                        
+                        <div class="form-group">
+                            <label class="form-label">User Name :</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Password :</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        
+                        <div class="text-center">
+                            <img src="{{ url_for('static', filename='images/employee-icon.png') }}" alt="Employee" class="role-icon">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-login w-100">LOGIN</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="login-card student shadow-lg">
+                <div class="login-header">STUDENT LOGIN</div>
+                <div class="card-body d-flex flex-column justify-content-between p-4">
+                    <form action="{{ url_for('login') }}" method="POST" class="h-100 d-flex flex-column justify-content-between">
+                        <input type="hidden" name="role" value="student">
+                        
+                        <div class="form-group">
+                            <label class="form-label">User Name :</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Password :</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        
+                        <div class="text-center">
+                            <img src="{{ url_for('static', filename='images/student-icon.png') }}" alt="Student" class="role-icon">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-login w-100">LOGIN</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="login-card parent shadow-lg">
+                <div class="login-header">PARENT LOGIN</div>
+                <div class="card-body d-flex flex-column justify-content-between p-4">
+                    <form action="{{ url_for('login') }}" method="POST" class="h-100 d-flex flex-column justify-content-between">
+                        <input type="hidden" name="role" value="parent">
+                        
+                        <div class="form-group">
+                            <label class="form-label">User Name :</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Password :</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        
+                        <div class="text-center">
+                            <img src="{{ url_for('static', filename='images/parent-icon.png') }}" alt="Parent" class="role-icon">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-login w-100">LOGIN</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="text-center mt-5">
+        <p class="text-muted">Click <a href="#" class="text-primary fw-bold text-decoration-none">here</a> to online payment</p>
+    </div>
+</div>
+
+<style>
+    /* Force Square Shape */
+    .login-card {
+        background: #fff;
+        border-radius: 25px; /* 25px Rounded Border */
+        overflow: hidden;
+        border: none;
+        aspect-ratio: 1 / 1; /* This makes it a perfect square */
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .login-card:hover {
+        transform: scale(1.03);
+    }
+
+    .card-body {
+        flex-grow: 1;
+    }
+
+    /* Header Styling */
+    .login-header {
+        padding: 15px;
+        text-align: center;
+        color: #fff;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 1rem;
+    }
+
+    /* Role Specific Colors */
+    .employee .login-header, .employee .btn-login { background-color: #7b1fa2; }
+    .student .login-header, .student .btn-login { background-color: #f57c00; }
+    .parent .login-header, .parent .btn-login { background-color: #0288d1; }
+
+    /* Icon Styling */
+    .role-icon {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        margin: 10px 0;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 2px;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+
+    .btn-login {
+        border: none;
+        color: #fff;
+        font-weight: 700;
+        padding: 12px;
+        border-radius: 15px; /* Matches the card vibe */
+        margin-top: auto;
+    }
+
+    /* Handle responsiveness - on small screens, square might be too tight */
+    @media (max-width: 768px) {
+        .login-card {
+            aspect-ratio: auto;
+            min-height: 450px;
+        }
+    }
+</style>
+
+{% endblock %}
+
+#====================================================================================
+<!-- {% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h3 class="mb-4">Attendance Management</h3>
+
+    {# 1. HIDE ATTENDANCE ENTRY FORM FROM STUDENTS/PARENTS #}
+    {% if session['user_role'] == 'teacher' %}
+    <div class="card shadow p-4 mb-4 border-0">
+        <h5 class="mb-3">Record Attendance</h5>
+        <form method="POST" action="/attendance">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Select Class</label>
+                    <select id="classSelect" name="class" class="form-select" required>
+                        <option value="">Choose Class</option>
+                        {% for i in range(1,11) %}
+                        <option value="{{i}}">Class {{i}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Select Student</label>
+                    <select id="studentSelect" name="student_id" class="form-select" required>
+                        <option value="">Select class first</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-control" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">Add</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="card p-3 mb-4 bg-light border-0 shadow-sm">
+        <form method="GET" action="/attendance" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">View Attendance by Class</label>
+                <select name="class_no" class="form-select">
+                    <option value="">All Classes</option>
+                    {% for i in range(1,11) %}
+                    <option value="{{i}}" {% if selected_class == i|string %}selected{% endif %}>Class {{i}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">View Records</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card shadow p-4 border-0">
+        <h5>Attendance Records {% if selected_class %}(Class {{selected_class}}){% endif %}</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student</th>
+                        <th>Class</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        {# 2. HIDE ACTIONS HEADER #}
+                        {% if session['user_role'] == 'teacher' %}
+                        <th>Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in attendance_list %}
+                    <tr>
+                        <td>{{ a.student_name }}</td>
+                        <td>Class {{ a.class }}</td>
+                        <td>{{ a.date }}</td>
+                        <td>
+                            {% if a.status == "Present" %}
+                                <span class="badge bg-success px-3 py-2">Present</span>
+                            {% elif a.status == "Absent" %}
+                                <span class="badge bg-danger px-3 py-2">Absent</span>
+                            {% else %}
+                                <span class="badge bg-secondary px-3 py-2">{{ a.status }}</span>
+                            {% endif %}
+                            </td>
+                        {# 3. HIDE DELETE BUTTON #}
+                        {% if session['user_role'] == 'teacher' %}
+                        <td>
+                            <a href="{{ url_for('delete_attendance', id=a._id|string) }}" 
+                               class="btn btn-sm btn-outline-danger" 
+                               onclick="return confirm('Delete this record?')">Delete</a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No records found. Select a class to view records.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Logic only needed for teachers who see the form
+if (document.getElementById("classSelect")) {
+    document.getElementById("classSelect").addEventListener("change", function() {
+        let classNo = this.value;
+        let studentSelect = document.getElementById("studentSelect");
+        
+        if (!classNo) {
+            studentSelect.innerHTML = '<option value="">Select class first</option>';
+            return;
+        }
+
+        fetch("/get_students/" + classNo)
+        .then(response => response.json())
+        .then(data => {
+            studentSelect.innerHTML = '<option value="">Choose Student</option>';
+            data.forEach(student => {
+                studentSelect.innerHTML += `<option value="${student.id}">${student.name}</option>`;
+            });
+        })
+        .catch(err => console.error("Error fetching students:", err));
+    });
+}
+</script>
+
+{% endblock %} -->

@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    /* Professional Blue Gradient Header */
+    .students-header { 
+        background: linear-gradient(135deg, #1565c0, #00d2ff); 
+        color: white; 
+        padding: 60px 0; 
+        border-radius: 0 0 50px 50px; 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Card and Hover Effects */
+    .stat-card { border: none; border-radius: 15px; transition: 0.3s; }
+    .table-card { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    
+    .btn-custom { border-radius: 30px; font-weight: bold; transition: 0.3s; }
+    
+    /* Table Styling */
+    .table thead { background-color: #f8f9fa; color: #1565c0; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
+    .student-name { font-weight: 700; color: #333; }
+</style>
+
+<div class="students-header mb-5">
+    <div class="container text-center">
+        <h1 class="fw-bold">Student Directory</h1>
+        <p class="opacity-75">Manage enrollment and student profiles</p>
+    </div>
+</div>
+
+<div class="container">
+    {# 1. HIDE ADD FORM FROM STUDENTS/PARENTS #}
+    {% if session['user_role'] == 'teacher' %}
+    <div class="card table-card shadow-sm p-4 mb-4 border-0">
+        <h5 class="mb-4 fw-bold text-primary"><i class="bi bi-person-plus-fill me-2"></i>Register New Student</h5>
+        <form method="POST" action="{{ url_for('students') }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Full Name</label>
+                    <input type="text" name="name" class="form-control border-0 bg-light py-2" placeholder="Full Name" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Roll Number</label>
+                    <input type="number" name="roll" class="form-control border-0 bg-light py-2" placeholder="101" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Class</label>
+                    <select name="class" class="form-select border-0 bg-light py-2" required>
+                        <option value="">Select</option>
+                        {% for i in range(1,11) %}
+                        <option value="{{i}}">Class {{i}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Section</label>
+                    <input type="text" name="section" class="form-control border-0 bg-light py-2" placeholder="A">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100 btn-custom py-2 shadow-sm">Add Student</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="card table-card shadow-sm p-3 mb-4 bg-white border-0">
+        <form method="GET" action="{{ url_for('students') }}">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-9">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Filter by Enrollment Class</label>
+                    <select name="class" class="form-select border-0 bg-light py-2">
+                        <option value="">All Registered Students</option>
+                        {% for i in range(1,11) %}
+                        <option value="{{i}}" {% if selected_class == i|string %}selected{% endif %}>Class {{i}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-dark w-100 btn-custom py-2">Apply Filter</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card table-card bg-white shadow-sm mb-5">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="fw-bold mb-0 text-dark">Current Enrollment</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="text-center">
+                    <tr>
+                        <th class="ps-4 text-start">Student Name</th>
+                        <th>Roll No</th>
+                        <th>Class</th>
+                        <th>Section</th>
+                        {% if session['user_role'] == 'teacher' %}
+                        <th class="pe-4 text-end">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if students %}
+                        {% for s in students %}
+                        <tr class="text-center">
+                            <td class="ps-4 text-start student-name">{{ s.name }}</td>
+                            <td><span class="badge bg-light text-dark border px-3">{{ s.roll_no }}</span></td>
+                            <td>Class {{ s.class }}</td>
+                            <td>{{ s.section or '-' }}</td>
+                            {% if session['user_role'] == 'teacher' %}
+                            <td class="pe-4 text-end">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-warning border-0 rounded-circle me-2" 
+                                            onclick="editStudent('{{s._id}}', '{{s.name}}', '{{s.roll_no}}', '{{s.class}}', '{{s.section}}')">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <a href="{{ url_for('delete_student', id=s._id|string) }}" 
+                                       class="btn btn-sm btn-outline-danger border-0 rounded-circle" 
+                                       onclick="return confirm('Permanent Action: Delete student?')">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </a>
+                                </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-people fs-2 d-block mb-2"></i>
+                                No student records found.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{# 4. EDIT MODAL FOR TEACHER #}
+{% if session['user_role'] == 'teacher' %}
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="/update_student" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header bg-primary text-white py-4" style="border-radius: 25px 25px 0 0;">
+                <h5 class="modal-title fw-bold">Update Student Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" name="id" id="edit-id">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Full Name</label>
+                    <input type="text" name="name" id="edit-name" class="form-control bg-light border-0 py-2" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small">Roll No</label>
+                        <input type="number" name="roll" id="edit-roll" class="form-control bg-light border-0 py-2" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small">Class</label>
+                        <select name="class" id="edit-class" class="form-select bg-light border-0 py-2">
+                            {% for i in range(1,11) %}
+                            <option value="{{i}}">Class {{i}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Section</label>
+                    <input type="text" name="section" id="edit-section" class="form-control bg-light border-0 py-2">
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold">Save Profile</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editStudent(id, name, roll, cls, sec) {
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-roll').value = roll;
+    document.getElementById('edit-class').value = cls;
+    document.getElementById('edit-section').value = sec;
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+</script>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb" style="font-size: 0.85rem;">
+            <li class="breadcrumb-item">
+                <a href="/" class="text-decoration-none text-muted">Home</a>
+            </li>
+            <li class="breadcrumb-item active fw-bold text-dark">Portal Dashboard</li>
+        </ol>
+    </nav>
+
+    {% if session['user_role'] == 'teacher' and notif_count > 0 %}
+    <div class="alert alert-primary shadow-sm border-0 rounded-0 border-start border-4 border-primary mb-5 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-bell-fill me-2"></i> New Admission Notifications
+            </h5>
+            <a href="/clear_notifications" class="btn btn-sm btn-primary rounded-0 px-3">
+                Mark all as Read
+            </a>
+        </div>
+
+        <div class="list-group list-group-flush bg-transparent">
+            {% for student in new_applicants %}
+            <div class="list-group-item bg-transparent border-0 px-0 py-2 d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="fw-bold text-dark">{{ student.full_name }}</span>
+                    <span class="text-muted mx-2">|</span>
+                    <small class="text-secondary text-uppercase" style="font-size: 0.7rem;">
+                        Course: {{ student.course }}
+                    </small>
+                    <span class="text-muted mx-2">|</span>
+                    <small class="text-muted italic">{{ student.email }}</small>
+                </div>
+                <span class="badge bg-light text-primary border border-primary-subtle">NEW</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row align-items-end mb-5">
+        <div class="col-md-8">
+            <h1 class="display-6 fw-bold text-dark mb-1">Administrative Workspace</h1>
+            <p class="text-muted mb-0">
+                Academic Session: 2025-26 | Welcome back,
+                <span class="fw-bold text-primary">{{ session['username'] }}</span>
+            </p>
+        </div>
+
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <div class="p-3 bg-white border rounded shadow-sm d-inline-block text-center">
+                <span class="text-muted small d-block mb-1">Authorization Level</span>
+                <span class="badge rounded-pill {% if session['user_role'] == 'teacher' %}bg-danger{% else %}bg-success{% endif %} px-3">
+                    {{ session['user_role']|upper }} ACCESS
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-info bg-opacity-10 p-2 rounded">
+                        <i class="bi bi-chat-dots text-info fs-4"></i>
+                    </div>
+
+                    {% if support_count > 0 %}
+                    <span class="badge rounded-pill bg-danger ms-auto">
+                        {{ support_count }} New
+                    </span>
+                    {% endif %}
+                </div>
+
+                <h5 class="fw-bold">Support Center</h5>
+                <p class="text-muted small">
+                    View and respond to inquiries from parents and students.
+                </p>
+
+                <a href="{{ url_for('teacher_support') }}"
+                   class="mt-auto text-info fw-bold text-decoration-none">
+                    View Messages →
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm custom-tile">
+                <div class="card-body p-4">
+                    <div class="tile-icon bg-primary-subtle text-primary mb-3">
+                        <i class="bi bi-people-fill fs-3"></i>
+                    </div>
+
+                    <h5 class="fw-bold card-title">Student Database</h5>
+                    <p class="text-muted small card-text">
+                        Comprehensive management of student enrollment, profiles, and sections.
+                    </p>
+
+                    <hr class="my-3 opacity-10">
+
+                    <a href="{{ url_for('students') }}"
+                       class="btn btn-link p-0 text-decoration-none fw-bold stretched-link">
+                        {% if session['user_role'] == 'teacher' %}
+                        Manage Records
+                        {% else %}
+                        View Profiles
+                        {% endif %} →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm custom-tile">
+                <div class="card-body p-4">
+                    <div class="tile-icon bg-success-subtle text-success mb-3">
+                        <i class="bi bi-calendar-check fs-3"></i>
+                    </div>
+
+                    <h5 class="fw-bold card-title">Attendance Tracking</h5>
+                    <p class="text-muted small card-text">
+                        Daily monitoring of student presence and automated compliance logs.
+                    </p>
+
+                    <hr class="my-3 opacity-10">
+
+                    <a href="{{ url_for('attendance') }}"
+                       class="btn btn-link p-0 text-decoration-none fw-bold stretched-link">
+                        {% if session['user_role'] == 'teacher' %}
+                        Record Entries
+                        {% else %}
+                        View History
+                        {% endif %} →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm custom-tile">
+                <div class="card-body p-4">
+                    <div class="tile-icon bg-warning-subtle text-warning mb-3">
+                        <i class="bi bi-graph-up-arrow fs-3"></i>
+                    </div>
+
+                    <h5 class="fw-bold card-title">Result Management</h5>
+                    <p class="text-muted small card-text">
+                        Secure processing of examination scores and student grade analysis.
+                    </p>
+
+                    <hr class="my-3 opacity-10">
+
+                    <a href="{{ url_for('marks') }}"
+                       class="btn btn-link p-0 text-decoration-none fw-bold stretched-link">
+                        {% if session['user_role'] == 'teacher' %}
+                        Modify Grades
+                        {% else %}
+                        View Report Card
+                        {% endif %} →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm custom-tile">
+                <div class="card-body p-4">
+                    <div class="tile-icon bg-info-subtle text-info mb-3">
+                        <i class="bi bi-clock-history fs-3"></i>
+                    </div>
+
+                    <h5 class="fw-bold card-title">Academic Schedule</h5>
+                    <p class="text-muted small card-text">
+                        Weekly timetable configurations and lecture slot management.
+                    </p>
+
+                    <hr class="my-3 opacity-10">
+
+                    <a href="{{ url_for('timetable') }}"
+                       class="btn btn-link p-0 text-decoration-none fw-bold stretched-link">
+                        {% if session['user_role'] == 'teacher' %}
+                        Edit Schedule
+                        {% else %}
+                        View Timetable
+                        {% endif %} →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-5 p-4 bg-white border-start border-4 border-primary shadow-sm rounded">
+        <h6 class="fw-bold text-dark">
+            <i class="bi bi-info-circle me-2"></i>Institutional Notice
+        </h6>
+
+        <p class="text-muted small mb-0">
+            Please ensure all administrative data entries are completed before the 5th of every month for regional synchronization.
+        </p>
+    </div>
+
+</div>
+
+<style>
+.custom-tile {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+.custom-tile:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important;
+}
+
+.tile-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.card-title {
+    color: #2c3e50;
+    letter-spacing: -0.3px;
+}
+
+.card-text {
+    line-height: 1.5;
+    height: 4.5em;
+    overflow: hidden;
+}
+</style>
+
+{% endblock %}

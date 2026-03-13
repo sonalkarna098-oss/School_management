@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPSEBS Portal - Access Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Official Top Bar styling */
+        .header-banner { background: white; border-bottom: 3px solid #0056b3; padding: 20px 0; text-align: center; }
+        
+        /* Navbar styling */
+        .navbar { background: white; border-bottom: 1px solid #eee; padding: 12px 0; }
+        .navbar-brand { font-size: 1.5rem; font-weight: bold; letter-spacing: -0.5px; }
+        .nav-link { font-weight: 500; color: #6c757d !important; font-size: 0.95rem; padding: 0 15px !important; }
+        .nav-link:hover { color: #007bff !important; }
+        
+        /* Layout Styling for Cards */
+        .login-section { margin-top: 50px; }
+        .auth-card { border: none; border-radius: 15px; overflow: hidden; transition: transform 0.3s; height: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .auth-card:hover { transform: translateY(-5px); }
+        
+        .card-header-custom { padding: 20px; text-align: right; color: white; font-weight: bold; font-size: 1.2rem; }
+        .bg-teacher { background: #8e24aa !important; } 
+        .bg-student { background: #fb8c00 !important; } 
+        .bg-parent { background: #039be5 !important; }  
+
+        .card-body { background: white; padding: 25px; }
+        .form-label { font-size: 0.9rem; color: #d32f2f; font-weight: bold; }
+        .avatar-img { width: 80px; margin-top: -10px; }
+        
+        .btn-login { border-radius: 20px; padding: 5px 25px; font-weight: bold; text-transform: uppercase; color: white; }
+        .btn-admission { border: 1px solid #333; color: #333; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+        .toggle-link { font-size: 0.8rem; cursor: pointer; display: block; margin-top: 10px; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="header-banner">
+    <div class="container">
+        <h2 class="fw-bold m-0">SOUTH POINT S.E.C  E.N.G B.O.A. SCHOOL (+2) </h2>
+        <p class="text-muted mb-0">A Private Institution</p>
+        <small>Malangwa, Sarlahi</small>
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg sticky-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <span style="color: #007bff;">SPSEBS</span> <span class="text-dark">Portal</span>
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#acetNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="acetNav">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About Us</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('courses') }}">Courses</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('contact') }}">Contact</a></li>
+                
+                {% if session.get('user_role') %}
+                    <li class="nav-item">
+                        <a class="nav-link text-primary" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+            
+            <div class="d-flex align-items-center gap-3">
+                {% if not session.get('user_role') %}
+                    <a href="{{ url_for('admission') }}" class="btn btn-admission px-4 py-2">Admission Open <i class="bi bi-arrow-up-right ms-1"></i></a>
+                {% else %}
+                    <div class="text-end d-none d-md-block lh-1">
+                        <small class="text-muted d-block" style="font-size: 0.6rem; text-transform: uppercase;">{{ session['user_role'] }}</small>
+                        <span class="fw-bold small">{{ session['username'] }}</span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger rounded-0 px-3" onclick="return confirm('Securely sign out?')">Logout</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container login-section mb-5">
+    <div class="row g-2 justify-content-center row-cols-2 row-cols-md-3">
+        
+        <div class="col">
+            <div class="card auth-card h-100">
+                <div class="card-header-custom bg-teacher p-2" style="font-size: 0.8rem;">Employee Login</div>
+                <div class="card-body p-2">
+                    <form action="/login" method="POST">
+                        <input type="hidden" name="role" value="teacher">
+                        <label class="form-label mb-0" style="font-size: 0.7rem;">User Name :</label>
+                        <input type="text" name="username" class="form-control form-control-sm mb-1">
+                        
+                        <label class="form-label mb-0" style="font-size: 0.7rem;">Password :</label>
+                        <input type="password" name="password" class="form-control form-control-sm mb-2">
+                        
+                        <div class="text-center">
+                            <img src="https://cdn-icons-png.flaticon.com/512/206/206857.png" width="40" class="mb-1">
+                            <button type="submit" class="btn btn-sm btn-login bg-teacher w-100" style="font-size: 0.7rem;">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card auth-card h-100">
+                <div class="card-header-custom bg-student p-2" style="font-size: 0.8rem;">Student Login</div>
+                <div class="card-body p-2">
+                    <form action="/login" method="POST">
+                        <input type="hidden" name="role" value="student">
+                        <label class="form-label mb-0" style="font-size: 0.7rem;">User Name :</label>
+                        <input type="text" name="username" class="form-control form-control-sm mb-1">
+                        
+                        <label class="form-label mb-0" style="font-size: 0.7rem;">Password :</label>
+                        <input type="password" name="password" class="form-control form-control-sm mb-2">
+                        
+                        <div class="text-center">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135810.png" width="40" class="mb-1">
+                            <button type="submit" class="btn btn-sm btn-login bg-student w-100" style="font-size: 0.7rem;">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card auth-card">
+                <div class="card-header-custom bg-parent">Parent Login / Signup</div>
+                <div class="card-body">
+                    <form action="/login" method="POST">
+                        <input type="hidden" name="role" value="parent">
+                        <div class="mb-3">
+                            <label class="form-label">User Name :</label>
+                            <input type="text" name="username" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password :</label>
+                            <input type="password" name="password" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <img src="https://cdn-icons-png.flaticon.com/512/4128/4128176.png" class="avatar-img" alt="Parent">
+                            <button type="submit" class="btn btn-login bg-parent border-0">Login</button>
+                        </div>
+                        <a href="/signup" class="toggle-link text-center">New Parent? Register here</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+=================================================
+base.html 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SPSEBS - SOUTH POINT S.E.C E.N.G B.O.A SCHOOL(+2)</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --acet-maroon: #800000; /* Institutional Maroon */
+            --acet-blue: #007bff;
+            --acet-bg: #fcfcfd;
+        }
+        
+        body { 
+            background-color: var(--acet-bg); 
+            font-family: 'Inter', sans-serif; 
+            color: #2c3e50;
+            scroll-behavior: smooth;
+        }
+
+        /* 1. Official Top Utility Bar */
+        .top-bar { 
+            background: var(--acet-maroon); 
+            color: white; 
+            font-size: 0.82rem; 
+            padding: 10px 0; 
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .top-bar a { color: rgba(255,255,255,0.9); text-decoration: none; margin-right: 20px; transition: 0.2s; }
+        .top-bar a:hover { color: white; }
+
+        /* 2. Professional Navigation Bar */
+        .navbar { background: white; border-bottom: 1px solid #eee; padding: 15px 0; }
+        .navbar-brand { font-size: 1.6rem; letter-spacing: -0.5px; font-weight: 700; }
+        .nav-link { 
+            font-weight: 600; 
+            color: #4a5568 !important; 
+            font-size: 0.9rem; 
+            padding: 0 15px !important; 
+            text-transform: uppercase;
+        }
+        .nav-link:hover, .nav-link.active { color: var(--acet-maroon) !important; }
+
+        /* 3. Split Hero Layout */
+        .hero-split-container { background: white; border-bottom: 1px solid #eee; overflow: hidden; }
+        
+        .hero-text-side { padding: 100px 60px; }
+        
+        .hero-image-side { 
+            /* High-quality campus image */
+            background-image: url('https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=2000'); 
+            background-size: cover; 
+            background-position: center; 
+            min-height: 600px; /* Fixed height ensures image visibility */
+            position: relative;
+        }
+
+        /* Legacy Badge Overlay */
+        .legacy-badge {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--acet-maroon);
+            z-index: 10;
+        }
+
+        /* 4. Action Buttons */
+        .btn-admission { 
+            border: 1px solid #333; 
+            color: #333; 
+            font-weight: 700; 
+            padding: 8px 20px; 
+            text-decoration: none; 
+            font-size: 0.85rem; 
+            transition: 0.3s;
+        }
+        .btn-admission:hover { background: #333; color: white; }
+
+        .btn-apply { background: #212529; color: white; border: none; padding: 15px 35px; font-weight: 700; transition: 0.3s; }
+        .btn-apply:hover { background: #000; transform: translateY(-3px); }
+
+        .btn-portal-login { border: 1px solid #dee2e6; color: #212529; padding: 15px 35px; font-weight: 700; text-decoration: none; }
+        .btn-portal-login:hover { background: #f8f9fa; }
+
+        /* Auth styling */
+        .user-identity { font-size: 0.85rem; line-height: 1.2; }
+        .btn-logout { border: 1px solid #dc3545; color: #dc3545; font-size: 0.8rem; padding: 4px 12px; text-decoration: none; }
+        .btn-logout:hover { background: #dc3545; color: white; }
+
+        footer { background: #1a1a1a; color: #fff; padding: 60px 0 40px; font-size: 0.9rem; }
+        
+    </style>
+</head>
+<body>
+
+<div class="top-bar d-none d-lg-block">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-4">
+            <a href="{{ url_for('calendar') }}"><i class="bi bi-calendar3-event me-2"></i>Academic Calendar</a>
+            <a href="#"><i class="bi bi-briefcase me-2"></i>Careers</a>
+            <a href="#"><i class="bi bi-book-half me-2"></i>Library</a>
+        </div>
+        <div class="small fw-semibold">
+            <span class="me-4"><i class="bi bi-telephone-fill me-2"></i> +977 46-520901</span>
+            <span><i class="bi bi-envelope-fill me-2"></i> info.spsebs01@gmail.com</span>
+        </div>
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg sticky-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <span style="color: var(--acet-blue);">SPSEBS</span> <span class="text-dark">Portal</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#acetNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="acetNav">
+            <ul class="navbar-nav mx-auto">
+                {% if session.get('user_role') %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Overview</a></li>
+                    {% if session['user_role'] == 'teacher' %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('students') }}">Academics</a></li>
+                    {% endif %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('attendance') }}">Attendance</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('marks') }}">Examination</a></li>
+                     <li class="nav-item"><a class="nav-link" href="{{ url_for('timetable') }}">TimeTable</a></li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="/">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">ABOUT US</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('courses') }}">COURSES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('contact') }}">CONTACT</a></li>
+                {% endif %}
+            </ul>
+            
+            <div class="d-flex align-items-center">
+                {% if session.get('user_role') %}
+                    <div class="user-identity me-3 text-end d-none d-md-block">
+                        <span class="fw-bold text-dark d-block">{{ session['username']|upper }}</span>
+                        <small class="text-muted d-block" style="font-size: 0.65rem;">{{ session['user_role']|upper }} ACCESS</small>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="btn btn-logout" onclick="return confirm('Sign out?')">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('admission') }}" class="btn-admission">ADMISSION OPEN</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="container-fluid p-0">
+    {% block content %}{% endblock %}
+</div>
+
+<footer class="mt-5 text-center">
+    <div class="container">
+        <h6 class="fw-bold">SOUTH   POINT   S.E.C   E.N.G    B.O.A   SCHOOL(+2)</h6>
+        <p class="small text-secondary mb-4">An Autonomous Institution | Accredited by NBA & NAAC</p>
+        <div class="d-flex justify-content-center gap-4 mb-4">
+            <a href="https://www.facebook.com/sonal.karna.7" class="text-white"><i class="bi bi-facebook fs-5"></i></a>
+            <a href="https://www.linkedin.com/in/sonal-karna-212980352/" class="text-white"><i class="bi bi-linkedin fs-5"></i></a>
+        </div>
+        <hr class="border-secondary opacity-25">
+        <p class="small text-secondary mb-0">© 2026 SPSEBS Portal | Powered by Institutional Management System.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

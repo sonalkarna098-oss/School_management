@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    /* Styling for the header gradient and rounded bottom */
+    .marks-header { 
+        background: linear-gradient(135deg, #0d47a1, #1976d2); 
+        color: white; 
+        padding: 60px 0; 
+        border-radius: 0 0 50px 50px; 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Hover effects for dashboard cards */
+    .stat-card { border: none; border-radius: 15px; transition: 0.3s; cursor: pointer; }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    
+    /* Table and Card styling */
+    .table-card { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    
+    /* Input styling for marks entry */
+    .marks-input { 
+        width: 80px; 
+        text-align: center; 
+        font-weight: bold; 
+        border-radius: 8px; 
+        border: 1px solid #ddd;
+    }
+</style>
+
+<div class="marks-header mb-5">
+    <div class="container text-center">
+        <h1 class="fw-bold">Examination & Grading</h1>
+        <p class="opacity-75">Academic Performance Management System</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card stat-card bg-white p-4 shadow-sm text-center h-100">
+                <h6 class="text-muted text-uppercase small fw-bold">Current Session</h6>
+                <h3 class="fw-bold text-primary">2026-27</h3>
+            </div>
+        </div>
+        
+        {% if session['user_role'] == 'teacher' %}
+        <div class="col-md-8">
+            <div class="card stat-card bg-dark text-white p-4 shadow-sm d-flex flex-row align-items-center justify-content-between h-100" 
+                 data-bs-toggle="modal" data-bs-target="#marksModal">
+                <div>
+                    <h4 class="fw-bold mb-0">Record Entry</h4>
+                    <p class="small opacity-75 mb-0">Select class and subject to enter student marks</p>
+                </div>
+                <i class="bi bi-pencil-square fs-1 text-primary"></i>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card table-card bg-light p-4 mb-4 border-0">
+        <form method="GET" action="/marks" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-uppercase">Class</label>
+                <select name="class_no" class="form-select border-0 shadow-sm">
+                    <option value="">Select Class</option>
+                    {% for i in range(1,11) %}
+                    <option value="{{i}}" {% if selected_class == i|string %}selected{% endif %}>Class {{i}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-uppercase">Subject</label>
+                <input type="text" name="subject" class="form-control border-0 shadow-sm" placeholder="e.g. Mathematics" value="{{ selected_subject or '' }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill">View Report Card</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card table-card bg-white shadow-sm mb-5">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="fw-bold mb-0 text-dark">Result Sheets</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-secondary small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Student Name</th>
+                        <th>Subject</th>
+                        <th>Exam Type</th>
+                        <th>Marks Obtained</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in marks_list %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">{{ m.student_name }}</td>
+                        <td>{{ m.subject }}</td>
+                        <td><span class="badge bg-info-subtle text-info rounded-pill px-3">{{ m.exam }}</span></td>
+                        <td class="fw-bold text-primary">{{ m.marks }}</td>
+                        <td class="text-end pe-4">
+                            {% if session['user_role'] == 'teacher' %}
+                            <a href="{{ url_for('delete_mark', id=m._id|string) }}" 
+                               class="btn btn-sm btn-outline-danger border-0 rounded-circle" 
+                               onclick="return confirm('Delete this record?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            Use filters above to display examination results.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if session['user_role'] == 'teacher' %}
+<div class="modal fade" id="marksModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header bg-dark text-white border-0 py-4" style="border-radius: 25px 25px 0 0;">
+                <h5 class="modal-title fw-bold px-3">Academic Performance Entry</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form action="{{ url_for('marks') }}" method="POST">
+                <div class="modal-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Class</label>
+                            <select name="class" id="modalClassSelectMarks" class="form-select border-0 bg-light rounded-3 py-2" required>
+                                <option value="" selected disabled>Select...</option>
+                                {% for i in range(1,11) %}
+                                    <option value="{{ i }}">Class {{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Subject</label>
+                            <input type="text" name="subject" class="form-control border-0 bg-light rounded-3 py-2" placeholder="Subject Name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Exam Type</label>
+                            <select name="exam" class="form-select border-0 bg-light rounded-3 py-2" required>
+                                <option value="Mid Term">Mid Term</option>
+                                <option value="Final Exam">Final Exam</option>
+                                <option value="Class Test">Class Test</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="studentListContainerMarks">
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-journal-text fs-1 d-block mb-2"></i>
+                            Select a class to load student roster.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold">Save All Results</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// Dynamic student loading for marks entry
+document.getElementById('modalClassSelectMarks').addEventListener('change', function() {
+    const className = this.value;
+    const container = document.getElementById('studentListContainerMarks');
+    
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Loading Students...</p>
+        </div>`;
+
+    fetch(`/get_students/${className}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-center text-danger py-4">No students found.</p>';
+                return;
+            }
+
+            let html = '<p class="text-muted small mb-3 px-2">Enter Marks (Out of 100):</p>';
+            html += '<div class="list-group list-group-flush" style="max-height: 350px; overflow-y: auto;">';
+            
+            data.forEach(student => {
+                html += `
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 bg-light rounded-4 mb-2 mx-1">
+                    <div>
+                        <h6 class="fw-bold mb-0">${student.name}</h6>
+                        <input type="hidden" name="student_ids" value="${student.id}">
+                    </div>
+                    <div>
+                        <input type="number" name="marks_list" class="form-control marks-input" placeholder="0" min="0" max="100" required>
+                    </div>
+                </div>`;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            container.innerHTML = '<p class="text-center text-danger py-4">Error loading data.</p>';
+        });
+});
+</script>
+
+{% endblock %}

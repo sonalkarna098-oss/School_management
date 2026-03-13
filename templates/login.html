@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
+
+    /* Layout Styling for Cards */
+    .login-section { margin-top: 60px; padding-bottom: 80px; }
+    
+    .auth-card { 
+        border: none; 
+        border-radius: 20px; 
+        overflow: hidden; 
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        height: 100%; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        background: white;
+    }
+    
+    .auth-card:hover { 
+        transform: translateY(-12px); 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        border: 1px solid #eee;
+    }
+
+    /* Role Specific Colors */
+    .bg-teacher { background: linear-gradient(135deg, #8e24aa, #6a1b9a) !important; } 
+    .bg-student { background: linear-gradient(135deg, #fb8c00, #ef6c00) !important; } 
+    .bg-parent { background: linear-gradient(135deg, #039be5, #0277bd) !important; }  
+
+    /* Icon Circle Styling */
+    .icon-box {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: white;
+        font-size: 2.5rem;
+    }
+
+    /* Button Styling */
+    .btn-custom {
+        border-radius: 30px;
+        padding: 10px 30px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        transition: 0.3s;
+    }
+
+    /* Modal Styling */
+    .modal-content { border-radius: 25px; border: none; overflow: hidden; }
+    .modal-header { border-bottom: none; padding: 30px 30px 10px; }
+    .modal-body { padding: 30px; }
+    .form-control { border-radius: 12px; padding: 12px; border: 1px solid #e0e0e0; }
+    .form-control:focus { box-shadow: 0 0 0 4px rgba(0,123,255,0.1); border-color: #007bff; }
+</style>
+
+<div class="container login-section">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-dark">Portal Access Center</h2>
+        <p class="text-muted">Select your identity to continue to the dashboard</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-12 col-md-4">
+            <div class="card auth-card p-4 text-center" data-bs-toggle="modal" data-bs-target="#teacherModal" style="cursor: pointer;">
+                <div class="icon-box bg-teacher shadow-sm">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <h4 class="fw-bold mb-2">EMPLOYEE</h4>
+                <p class="text-muted small mb-4">Access faculty workspace and academic management tools.</p>
+                <button class="btn btn-outline-dark btn-custom">Open Login</button>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card auth-card p-4 text-center" data-bs-toggle="modal" data-bs-target="#studentModal" style="cursor: pointer;">
+                <div class="icon-box bg-student shadow-sm">
+                    <i class="bi bi-mortarboard"></i>
+                </div>
+                <h4 class="fw-bold mb-2">STUDENT</h4>
+                <p class="text-muted small mb-4">View your schedule, attendance, and exam results.</p>
+                <button class="btn btn-outline-dark btn-custom">Open Login</button>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card auth-card p-4 text-center" data-bs-toggle="modal" data-bs-target="#parentModal" style="cursor: pointer;">
+                <div class="icon-box bg-parent shadow-sm">
+                    <i class="bi bi-people"></i>
+                </div>
+                <h4 class="fw-bold mb-2">PARENT</h4>
+                <p class="text-muted small mb-4">Monitor student progress and official school notices.</p>
+                <button class="btn btn-outline-dark btn-custom">Open Login</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <p class="small text-muted">Trouble logging in? <a href="/contact" class="text-danger fw-bold">Contact Support Center</a></p>
+    </div>
+</div>
+
+<div class="modal fade" id="teacherModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-teacher text-white">
+                <h5 class="modal-title fw-bold">Employee Login</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/login" method="POST">
+                    <input type="hidden" name="role" value="teacher">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">USERNAME</label>
+                        <input type="text" name="username" class="form-control" placeholder="Enter employee ID" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">PASSWORD</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn bg-teacher text-white w-100 py-3 fw-bold rounded-pill mb-3">SECURE LOGIN</button>
+                    <div class="text-center">
+                        <span class="small text-muted">New faculty?</span>
+                        <a href="/signup" class="small fw-bold text-decoration-none" style="color: #8e24aa;">Register Account</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="studentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-student text-white">
+                <h5 class="modal-title fw-bold">Student Login</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/login" method="POST">
+                    <input type="hidden" name="role" value="student">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">STUDENT ID</label>
+                        <input type="text" name="username" class="form-control" placeholder="Enter registration number" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">PASSWORD</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn bg-student text-white w-100 py-3 fw-bold rounded-pill mb-3">ACCESS PORTAL</button>
+                    <div class="text-center">
+                        <span class="small text-muted">First time?</span>
+                        <a href="/signup" class="small fw-bold text-decoration-none" style="color: #fb8c00;">Create Profile</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="parentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-parent text-white">
+                <h5 class="modal-title fw-bold">Parent Login</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/login" method="POST">
+                    <input type="hidden" name="role" value="parent">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">LINKED USERNAME</label>
+                        <input type="text" name="username" class="form-control" placeholder="Enter parent ID" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">PASSWORD</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn bg-parent text-white w-100 py-3 fw-bold rounded-pill mb-3">VIEW PROGRESS</button>
+                    <div class="text-center">
+                        <span class="small text-muted">Need an account?</span>
+                        <a href="/signup" class="small fw-bold text-decoration-none" style="color: #039be5;">Request Access</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

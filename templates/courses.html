@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid p-0 position-relative mb-5" style="
+    background-image: url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=2000'); 
+    background-size: cover; 
+    background-position: center;
+    min-height: 55vh;
+    border-radius: 0 0 150px 0;
+    overflow: hidden;">
+    
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0.28,0.3,0,0.65);"></div>
+    
+    <div class="container h-100 position-relative d-flex align-items-center" style="min-height: 55vh; z-index: 10;">
+        <div class="text-white">
+            <h6 class="text-warning fw-bold text-uppercase tracking-widest mb-3">Academic Excellence</h6>
+            <h1 class="display-3 fw-bold lh-1 mb-3">Undergraduate <span style="border-bottom: 4px solid #ffc107;">Programs</span></h1>
+            <p class="lead opacity-90 mb-4">"Trust" - Explore our diverse range of engineering disciplines designed for the future.</p>
+            <a href="{{ url_for('admission') }}" class="btn btn-warning rounded-pill px-5 py-2 fw-bold shadow">Apply Now</a>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5 my-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-dark">Course And Study Program</h2>
+        <div class="mx-auto bg-maroon mt-3" style="width: 60px; height: 4px; background-color: #800000;"></div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm transition-hover overflow-hidden rounded-4">
+                <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=800" class="card-img-top" alt="CSE">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary-subtle p-2 rounded me-3 text-primary"><i class="bi bi-mortarboard fs-4"></i></div>
+                        <h5 class="fw-bold mb-0">Higher Education</h5>
+                    </div>
+                    <p class="text-muted small">Equipping students with basic knowledge and skills in mathematics, science, languages, and social awarenes</p>
+                    <a href="{{ url_for('admission') }}" class="btn btn-link p-0 text-decoration-none fw-bold text-primary">Enroll Now →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm transition-hover overflow-hidden rounded-4">
+                <img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&q=80&w=800" class="card-img-top" alt="ECE">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success-subtle p-2 rounded me-3 text-success"><i class="bi bi-briefcase fs-4"></i></div>
+                        <h5 class="fw-bold mb-0">Management</h5>
+                    </div>
+                    <p class="text-muted small">Providing foundational knowledge in business administration, management principles, and leadership skills.</p>
+                    <a href="{{ url_for('admission') }}" class="btn btn-link p-0 text-decoration-none fw-bold text-success">Enroll Now →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm transition-hover overflow-hidden rounded-4">
+                <img src="https://i.pinimg.com/736x/4e/c0/fe/4ec0fe5355c671eef3c7c7bf69b279ef.jpg" class="card-img-top" alt="Mechanical">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning-subtle p-2 rounded me-3 text-warning"><i class="bi bi-bank fs-4"></i></div>
+                        <h5 class="fw-bold mb-0">LAW.</h5>
+                    </div>
+                    <p class="text-muted small">Our program focuses on imparting core knowledge in constitutional law, criminal law, and legal procedures to prepare students for the legal profession.</p>
+                    <a href="{{ url_for('admission') }}" class="btn btn-link p-0 text-decoration-none fw-bold text-warning">Enroll Now →</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-5 g-0 text-center text-white bg-dark shadow-lg overflow-hidden rounded-4">
+        <div class="col-md-3 border-end border-secondary border-opacity-25 p-4">
+            <h3 class="fw-bold text-warning mb-0">4,500+</h3>
+            <small class="text-uppercase tracking-widest smallest">Total Students</small>
+        </div>
+        <div class="col-md-3 border-end border-secondary border-opacity-25 p-4">
+            <h3 class="fw-bold text-warning mb-0">320+</h3>
+            <small class="text-uppercase tracking-widest smallest">Placements 2025</small>
+        </div>
+        <div class="col-md-3 border-end border-secondary border-opacity-25 p-4">
+            <h3 class="fw-bold text-warning mb-0">105</h3>
+            <small class="text-uppercase tracking-widest smallest">Doctoral Faculty</small>
+        </div>
+        <div class="col-md-3 p-4">
+            <h3 class="fw-bold text-warning mb-0">720</h3>
+            <small class="text-uppercase tracking-widest smallest">Highest Package</small>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for professional curved sections */
+    .tracking-widest { letter-spacing: 0.15rem; }
+    .bg-maroon { background-color: #800000; }
+    .smallest { font-size: 0.65rem; }
+    .card-img-top { height: 200px; object-fit: cover; }
+    
+    /* Walton Oak inspired color shadows and transitions */
+    .transition-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .transition-hover:hover { 
+        transform: translateY(-8px); 
+        box-shadow: 0 1rem 3rem rgba(0,0,0,0.15) !important; 
+    }
+
+    .bg-primary-subtle { background-color: #e7f1ff; }
+    .bg-success-subtle { background-color: #e6fcf5; }
+    .bg-warning-subtle { background-color: #fff9db; }
+</style>
+
+{% endblock %}
