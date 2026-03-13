@@ -7,9 +7,16 @@ app = Flask(__name__)
 app.secret_key = "super_secret_school_key"
 
 # ================= DATABASE =================
-client = MongoClient("mongodb://localhost:27017/")
-db = client["school_db"]
+atlas_uri = os.getenv("MONGO_URLI")
 
+try:
+    client = MongoClient(atlas_uri)
+    db = client["management"]
+    # Verify connection
+    client.admin.command('ping')
+    print("Successfully connected to MongoDB Atlas (Database: management)")
+except Exception as e:
+    print(f"Error connecting to MongoDB Atlas: {e}")
 # ================= INSTITUTIONAL PAGES =================
 @app.route("/")
 def index():
