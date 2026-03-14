@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = "super_secret_school_key"
 
 # ================= DATABASE =================
-atlas_uri = os.getenv("MONGO_URLI")
+atlas_uri = os.getenv("MONGO_URI")
 
 try:
     client = MongoClient(atlas_uri)
