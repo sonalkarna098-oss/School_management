@@ -1,311 +1,415 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SPSEBS - SOUTH POINT S.E.C E.N.G B.O.A SCHOOL(+2)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SPSEBS - SOUTH POINT SEC ENG BOA SCHOOL(+2)</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
-<style>
-:root{
---acet-maroon:#800000;
---acet-blue:#007bff;
---acet-bg:#fcfcfd;
-}
+    <style>
+        :root {
+            --acet-maroon: #800000;
+            --acet-blue: #007bff;
+            --acet-bg: #fcfcfd;
+            /* Magic Nav variable - matching the body background exactly so the cutout effect blends */
+            --clr: #fcfcfd; 
+        }
 
-body{
-background-color:var(--acet-bg);
-font-family:'Inter',sans-serif;
-color:#2c3e50;
-scroll-behavior:smooth;
-}
+        body {
+            background-color: var(--acet-bg);
+            font-family: 'Inter', sans-serif;
+            color: #2c3e50;
+            scroll-behavior: smooth;
+            margin: 0;
+            padding: 0;
+        }
 
-.top-bar{
-background:var(--acet-maroon);
-color:white;
-font-size:0.82rem;
-padding:10px 0;
-border-bottom:1px solid rgba(255,255,255,0.1);
-}
+        .top-bar {
+            background: var(--acet-maroon);
+            color: white;
+            font-size: 0.82rem;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
 
-.top-bar a{
-color:rgba(255,255,255,0.9);
-text-decoration:none;
-margin-right:20px;
-transition:0.2s;
-}
+        .top-bar a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            margin-right: 20px;
+            transition: 0.2s;
+        }
 
-.top-bar a:hover{color:white;}
+        .top-bar a:hover { color: white; }
 
-.navbar{
-background:white;
-border-bottom:1px solid #eee;
-padding:15px 0;
-}
+        /* --- MAGIC NAVIGATION BAR STYLES --- */
+        .nav-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 0;
+            background: var(--clr);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eee;
+            
+            /* Mobile fix: allow horizontal scrolling if icons exceed screen width */
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+        }
+        
+        .nav-wrapper::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
 
-.navbar-brand{
-font-size:1.6rem;
-letter-spacing:-0.5px;
-font-weight:700;
-}
+        .navigation {
+            height: 70px;
+            background: #fff;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 0 10px; 
+        }
 
-.nav-link{
-font-weight:600;
-color:#4a5568 !important;
-font-size:0.9rem;
-padding:0 15px !important;
-text-transform:uppercase;
-}
+        .navigation ul {
+            display: flex;
+            position: relative; 
+            height: 70px;
+            padding: 0;
+            margin: 0;
+        }
 
-.nav-link:hover,.nav-link.active{
-color:var(--acet-maroon)!important;
-}
+        .navigation ul li {
+            position: relative;
+            list-style: none;
+            width: 70px;
+            height: 70px;
+            z-index: 1;
+        }
 
-@media (max-width:991px){
+        .navigation ul li a {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            text-decoration: none;
+        }
 
-.navbar-collapse{
-background:white;
-position:absolute;
-top:100%;
-left:0;
-width:100%;
-z-index:1050;
-padding:25px;
-box-shadow:0 15px 30px rgba(0,0,0,0.15);
-border-bottom:4px solid var(--acet-maroon);
-}
+        .navigation ul li a .icon {
+            position: relative;
+            display: block;
+            line-height: 75px;
+            font-size: 1.5rem;
+            text-align: center;
+            transition: 0.5s;
+            color: var(--acet-maroon);
+        }
 
-.navbar-nav{
-text-align:center;
-margin-bottom:20px;
-}
+        .navigation ul li.active a .icon {
+            transform: translateY(-32px);
+            color: #fff;
+        }
 
-.nav-item{
-padding:12px 0;
-border-bottom:1px solid #f8f9fa;
-}
+        .navigation ul li a .text {
+            position: absolute;
+            color: var(--acet-maroon);
+            font-weight: 600;
+            font-size: 0.65em;
+            letter-spacing: 0.05em;
+            transition: 0.5s;
+            opacity: 0;
+            transform: translateY(20px);
+            text-transform: uppercase;
+        }
 
-.nav-item:last-child{border-bottom:none;}
+        .navigation ul li.active a .text {
+            transform: translateY(10px);
+            opacity: 1;
+        }
 
-.navbar-toggler{
-border:none;
-padding:0;
-}
+        .indicator {
+            position: absolute;
+            top: -35px; 
+            left: 0; 
+            width: 70px;
+            height: 70px;
+            background: var(--acet-maroon);
+            border-radius: 50%;
+            border: 6px solid var(--clr);
+            /* Smooth cubic-bezier transition applied here */
+            transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1); 
+            pointer-events: none; 
+        }
 
-.navbar-toggler:focus{box-shadow:none;}
+        .indicator::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: -22px;
+            width: 20px;
+            height: 20px;
+            background: transparent;
+            border-top-right-radius: 20px;
+            box-shadow: 1px -10px 0 0 var(--clr);
+        }
 
-.mobile-auth-btn{
-width:100%;
-text-align:center;
-margin-top:10px;
-}
-}
+        .indicator::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: -22px;
+            width: 20px;
+            height: 20px;
+            background: transparent;
+            border-top-left-radius: 20px;
+            box-shadow: -1px -10px 0 0 var(--clr);
+        }
 
-.btn-admission{
-border:1px solid #333;
-color:#333;
-font-weight:700;
-padding:8px 20px;
-text-decoration:none;
-font-size:0.85rem;
-transition:0.3s;
-display:inline-block;
-}
+        /* Movement Logic */
+        .navigation ul li:nth-child(1).active ~ .indicator { transform: translateX(calc(70px * 0)); }
+        .navigation ul li:nth-child(2).active ~ .indicator { transform: translateX(calc(70px * 1)); }
+        .navigation ul li:nth-child(3).active ~ .indicator { transform: translateX(calc(70px * 2)); }
+        .navigation ul li:nth-child(4).active ~ .indicator { transform: translateX(calc(70px * 3)); }
+        .navigation ul li:nth-child(5).active ~ .indicator { transform: translateX(calc(70px * 4)); }
+        .navigation ul li:nth-child(6).active ~ .indicator { transform: translateX(calc(70px * 5)); }
+        .navigation ul li:nth-child(7).active ~ .indicator { transform: translateX(calc(70px * 6)); }
+        .navigation ul li:nth-child(8).active ~ .indicator { transform: translateX(calc(70px * 7)); }
 
-.btn-admission:hover{
-background:#333;
-color:white;
-}
+        .nav-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.55rem;
+            padding: 3px 5px;
+        }
 
-.user-identity{
-font-size:0.85rem;
-line-height:1.2;
-}
-
-.btn-logout{
-border:1px solid #dc3545;
-color:#dc3545;
-font-size:0.8rem;
-padding:4px 12px;
-text-decoration:none;
-display:inline-block;
-}
-
-.btn-logout:hover{
-background:#dc3545;
-color:white;
-}
-
-footer{
-background:#1a1a1a;
-color:#fff;
-padding:60px 0 40px;
-font-size:0.9rem;
-}
-</style>
+        /* --- FOOTER STYLES --- */
+        footer {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 60px 0 40px;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 
 <body>
-    
 
-<div class="top-bar d-none d-lg-block">
-<div class="container d-flex justify-content-between align-items-center">
+    <div class="top-bar d-none d-lg-block">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex gap-4">
+                <a href="{{ url_for('calendar') }}"><i class="bi bi-calendar3-event me-2"></i>Academic Calendar</a>
+                <a href="{{url_for('careers')}}"><i class="bi bi-briefcase me-2"></i>Careers</a>
+                <a href="{{ url_for('library') }}"><i class="bi bi-book-half me-2"></i>Library</a>
+            </div>
+            <div class="small fw-semibold">
+                <span class="me-4"><i class="bi bi-telephone-fill me-2"></i> +977 46-520901</span>
+                <span><i class="bi bi-envelope-fill me-2"></i><a href="https://mail.google.com/mail/?view=cm&fs=1&to=info.spsebs01@gmail.com" target="_blank">
+                    info.spsebs01@gmail.com
+                </a></span>
+            </div>
+        </div>
+    </div>
 
-<div class="d-flex gap-4">
-<a href="{{ url_for('calendar') }}"><i class="bi bi-calendar3-event me-2"></i>Academic Calendar</a>
-<a href="{{url_for('careers')}}"><i class="bi bi-briefcase me-2"></i>Careers</a>
-<a href="{{ url_for('library') }}"><i class="bi bi-book-half me-2"></i>Library</a>
-</div>
+    <div class="nav-wrapper">
+        <div class="navigation">
+            <ul>
+                {% if session.get('user_role') %}
+                    
+                    <li class="list">
+                        <a href="{{ url_for('dashboard') }}">
+                            <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
+                            <span class="text">Overview</span>
+                        </a>
+                    </li>
 
-<div class="small fw-semibold">
-<span class="me-4"><i class="bi bi-telephone-fill me-2"></i> +977 46-520901</span>
-<span><i class="bi bi-envelope-fill me-2"></i><a href="https://mail.google.com/mail/?view=cm&fs=1&to=info.spsebs01@gmail.com" target="_blank">
-  info.spsebs01@gmail.com
-</a> </span>
-</div>
+                    {% if session['user_role'] == 'teacher' %}
+                    <li class="list">
+                        <a href="{{ url_for('students') }}">
+                            <span class="icon"><ion-icon name="school-outline"></ion-icon></span>
+                            <span class="text">Academics</span>
+                        </a>
+                    </li>
+                    {% endif %}
 
-</div>
-</div>
+                    <li class="list">
+                        <a href="{{ url_for('attendance') }}">
+                            <span class="icon"><ion-icon name="calendar-outline"></ion-icon></span>
+                            <span class="text">Attendance</span>
+                        </a>
+                    </li>
 
-<nav class="navbar navbar-expand-lg sticky-top shadow-sm">
+                    <li class="list">
+                        <a href="{{ url_for('marks') }}">
+                            <span class="icon"><ion-icon name="document-text-outline"></ion-icon></span>
+                            <span class="text">Exams</span>
+                        </a>
+                    </li>
 
-<div class="container">
+                    <li class="list">
+                        <a href="{{ url_for('timetable') }}">
+                            <span class="icon"><ion-icon name="time-outline"></ion-icon></span>
+                            <span class="text">TimeTable</span>
+                        </a>
+                    </li>
 
-<a class="navbar-brand" href="/">
-<span style="color:var(--acet-blue);">SOUTH POINT</span>
-<span class="text-dark">Portal</span>
-</a>
+                    {% if session.get('user_role') == 'teacher' %}
+                    <li class="list">
+                        <a href="{{ url_for('teacher_support') }}">
+                            <span class="icon">
+                                <ion-icon name="help-buoy-outline"></ion-icon>
+                                {% if support_count is defined and support_count > 0 %}
+                                    <span class="badge rounded-pill bg-danger nav-badge">{{ support_count }}</span>
+                                {% endif %}
+                            </span>
+                            <span class="text">Support</span>
+                        </a>
+                    </li>
+                    {% endif %}
 
-<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#acetNav">
-<i class="bi bi-list fs-1 text-dark"></i>
-</button>
+                    <li class="list">
+                        <a href="{{ url_for('logout') }}" onclick="return confirm('Sign out?')">
+                            <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                            <span class="text">Logout</span>
+                        </a>
+                    </li>
 
-<div class="collapse navbar-collapse" id="acetNav">
+                {% else %}
+                    
+                    <li class="list">
+                        <a href="/">
+                            <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
+                            <span class="text">Home</span>
+                        </a>
+                    </li>
+                    <li class="list">
+                        <a href="{{ url_for('about') }}">
+                            <span class="icon"><ion-icon name="information-circle-outline"></ion-icon></span>
+                            <span class="text">About Us</span>
+                        </a>
+                    </li>
+                    <li class="list">
+                        <a href="{{ url_for('courses') }}">
+                            <span class="icon"><ion-icon name="book-outline"></ion-icon></span>
+                            <span class="text">Courses</span>
+                        </a>
+                    </li>
+                    <li class="list">
+                        <a href="{{ url_for('contact') }}">
+                            <span class="icon"><ion-icon name="call-outline"></ion-icon></span>
+                            <span class="text">Contact</span>
+                        </a>
+                    </li>
+                    <li class="list">
+                        <a href="{{ url_for('admission') }}">
+                            <span class="icon"><ion-icon name="person-add-outline"></ion-icon></span>
+                            <span class="text">Admission</span>
+                        </a>
+                    </li>
 
-<ul class="navbar-nav mx-auto">
+                {% endif %}
+                
+                <div class="indicator"></div>
+            </ul>
+        </div>
+    </div>
 
-{% if session.get('user_role') %}
+    <div class="container-fluid p-0">
+        {% block content %}{% endblock %}
+    </div>
 
-<li class="nav-item">
-<a class="nav-link" href="{{ url_for('dashboard') }}">Overview</a>
-</li>
+    <footer class="mt-5 text-center">
+        <div class="container">
+            <h6 class="fw-bold">SOUTH POINT SEC ENG BOA SCHOOL(+2)</h6>
+            <p class="small text-secondary mb-4">An Autonomous Institution | Accredited by NEB</p>
+            <div class="d-flex justify-content-center gap-4 mb-4">
+                <a href="https://www.facebook.com/south.point.mlw" class="text-white"><i class="bi bi-facebook fs-5"></i></a>
+                <a href="https://www.linkedin.com/in/sonal-karna-212980352/" class="text-white"><i class="bi bi-linkedin fs-5"></i></a>
+            </div>
+            <hr class="border-secondary opacity-25">
+            <p class="small text-secondary mb-0">© 2026 SPSEBS Portal | Powered by Institutional Management System.</p>
+        </div>
+    </footer>
 
-{% if session['user_role']=='teacher' %}
-<li class="nav-item">
-<a class="nav-link" href="{{ url_for('students') }}">Academics</a>
-</li>
-{% endif %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<li class="nav-item">
-<a class="nav-link" href="{{ url_for('attendance') }}">Attendance</a>
-</li>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const list = document.querySelectorAll('.list');
+            const navUl = document.querySelector('.navigation ul');
+            const currentPath = window.location.pathname; 
+            let activeItem = null;
 
-<li class="nav-item">
-<a class="nav-link" href="{{ url_for('marks') }}">Examination</a>
-</li>
+            // 1. Highlight the correct tab based on the current Flask URL
+            list.forEach((item) => {
+                const linkElement = item.querySelector('a');
+                if (linkElement) {
+                    const href = linkElement.getAttribute('href');
+                    if (currentPath === href) {
+                        item.classList.add('active');
+                        activeItem = item; 
+                    } else {
+                        item.classList.remove('active');
+                    }
+                }
+            });
 
-<li class="nav-item">
-<a class="nav-link" href="{{ url_for('timetable') }}">TimeTable</a>
-</li>
+            // Fallback: Default to the first item if no URL matches
+            if (!activeItem && list.length > 0) {
+                list[0].classList.add('active');
+                activeItem = list[0];
+            }
 
-{% if session.get('user_role') == 'teacher' %}
-<li class="nav-item">
-<a class="nav-link" href="{{ url_for('teacher_support') }}">
-SUPPORT
-{% if support_count is defined and support_count > 0 %}
-<span class="badge rounded-pill bg-danger" style="font-size:0.6rem;">
-{{ support_count }}
-</span>
-{% endif %}
+            // 2. SMOOTH HOVER EFFECT
+            list.forEach((item) => {
+                item.addEventListener('mouseenter', function() {
+                    list.forEach((li) => li.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
 
-</a>
-</li>
+            // 3. SNAP BACK ON MOUSE LEAVE
+            navUl.addEventListener('mouseleave', function() {
+                list.forEach((li) => li.classList.remove('active'));
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+            });
 
-{% endif %}
+            // 4. SMOOTH CLICK ANIMATION (Fixes the Flask Reload Bug)
+            list.forEach((item) => {
+                item.addEventListener('click', function(e) {
+                    const link = this.querySelector('a');
+                    const href = link.getAttribute('href');
+                    
+                    if (link && href && href !== '#' && !link.hasAttribute('onclick')) {
+                        e.preventDefault(); 
+                        
+                        activeItem = this; 
+                        list.forEach((li) => li.classList.remove('active'));
+                        this.classList.add('active');
 
-{% else %}
-
-
-<li class="nav-item"><a class="nav-link" href="/">HOME</a></li>
-<li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">ABOUT US</a></li>
-<li class="nav-item"><a class="nav-link" href="{{ url_for('courses') }}">COURSES</a></li>
-<li class="nav-item"><a class="nav-link" href="{{ url_for('contact') }}">CONTACT</a></li>
-
-{% endif %}
-
-</ul>
-
-<div class="d-flex align-items-center mobile-auth-btn">
-
-{% if session.get('user_role') %}
-
-<div class="user-identity me-3 text-end d-none d-lg-block">
-<span class="fw-bold text-dark d-block">{{ session['username']|upper }}</span>
-<small class="text-muted d-block" style="font-size:0.65rem;">
-{{ session['user_role']|upper }} ACCESS
-</small>
-</div>
-
-<a href="{{ url_for('logout') }}"
-class="btn btn-logout w-100 w-lg-auto"
-onclick="return confirm('Sign out?')">
-Logout
-</a>
-
-{% else %}
-
-<a href="{{ url_for('admission') }}"
-class="btn-admission w-100 w-lg-auto text-center">
-ADMISSION OPEN
-</a>
-
-{% endif %}
-
-</div>
-
-</div>
-</div>
-</nav>
-
-<div class="container-fluid p-0">
-{% block content %}{% endblock %}
-</div>
-
-<footer class="mt-5 text-center">
-
-<div class="container">
-
-<h6 class="fw-bold">
-SOUTH POINT S.E.C E.N.G B.O.A SCHOOL(+2)
-</h6>
-
-<p class="small text-secondary mb-4">
-An Autonomous Institution | Accredited by NEB
-</p>
-
-<div class="d-flex justify-content-center gap-4 mb-4">
-<a href="https://www.facebook.com/south.point.mlw" class="text-white">
-<i class="bi bi-facebook fs-5"></i>
-</a>
-
-<a href="https://www.linkedin.com/in/sonal-karna-212980352/" class="text-white">
-<i class="bi bi-linkedin fs-5"></i>
-</a>
-</div>
-
-<hr class="border-secondary opacity-25">
-
-<p class="small text-secondary mb-0">
-© 2026 SPSEBS Portal | Powered by Institutional Management System.
-</p>
-
-</div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+                        setTimeout(() => {
+                            window.location.href = href;
+                        }, 400); 
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>
