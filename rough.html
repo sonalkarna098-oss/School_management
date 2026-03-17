@@ -1,346 +1,260 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPSEBS Portal - Access Center</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        /* Official Top Bar styling */
-        .header-banner { background: white; border-bottom: 3px solid #0056b3; padding: 20px 0; text-align: center; }
-        
-        /* Navbar styling */
-        .navbar { background: white; border-bottom: 1px solid #eee; padding: 12px 0; }
-        .navbar-brand { font-size: 1.5rem; font-weight: bold; letter-spacing: -0.5px; }
-        .nav-link { font-weight: 500; color: #6c757d !important; font-size: 0.95rem; padding: 0 15px !important; }
-        .nav-link:hover { color: #007bff !important; }
-        
-        /* Layout Styling for Cards */
-        .login-section { margin-top: 50px; }
-        .auth-card { border: none; border-radius: 15px; overflow: hidden; transition: transform 0.3s; height: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .auth-card:hover { transform: translateY(-5px); }
-        
-        .card-header-custom { padding: 20px; text-align: right; color: white; font-weight: bold; font-size: 1.2rem; }
-        .bg-teacher { background: #8e24aa !important; } 
-        .bg-student { background: #fb8c00 !important; } 
-        .bg-parent { background: #039be5 !important; }  
+{% extends "base.html" %}
 
-        .card-body { background: white; padding: 25px; }
-        .form-label { font-size: 0.9rem; color: #d32f2f; font-weight: bold; }
-        .avatar-img { width: 80px; margin-top: -10px; }
-        
-        .btn-login { border-radius: 20px; padding: 5px 25px; font-weight: bold; text-transform: uppercase; color: white; }
-        .btn-admission { border: 1px solid #333; color: #333; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
-        .toggle-link { font-size: 0.8rem; cursor: pointer; display: block; margin-top: 10px; color: #666; text-decoration: none; }
-    </style>
-</head>
-<body>
+{% block content %}
+<style>
+    /* Professional Blue Gradient Header */
+    .students-header { 
+        background: linear-gradient(135deg, #1565c0, #00d2ff); 
+        color: white; 
+        padding: 60px 0; 
+        border-radius: 0 0 50px 50px; 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .table-card { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .btn-custom { border-radius: 30px; font-weight: bold; transition: 0.3s; }
+    .student-name { font-weight: 700; color: #333; }
+    .filter-pill { transition: 0.3s; cursor: pointer; }
+    .filter-pill:hover { background-color: #e9ecef !important; }
+</style>
 
-<div class="header-banner">
-    <div class="container">
-        <h2 class="fw-bold m-0">SOUTH POINT S.E.C  E.N.G B.O.A. SCHOOL (+2) </h2>
-        <p class="text-muted mb-0">A Private Institution</p>
-        <small>Malangwa, Sarlahi</small>
+<div class="students-header mb-5">
+    <div class="container text-center">
+        <h1 class="fw-bold">Student Directory</h1>
+        <p class="opacity-75">Manage enrollment and student profiles</p>
     </div>
 </div>
 
-<nav class="navbar navbar-expand-lg sticky-top shadow-sm">
-    <div class="container">
-        <a class="navbar-brand" href="/">
-            <span style="color: #007bff;">SPSEBS</span> <span class="text-dark">Portal</span>
-        </a>
-        
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#acetNav">
-            <span class="navbar-toggler-icon"></span>
+<div class="container">
+    {# Success Message #}
+    {% if request.args.get('message') %}
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> {{ request.args.get('message') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    {# 1. Register Form (Teachers Only) #}
+    {% if session['user_role'] == 'teacher' %}
+    <div class="card table-card shadow-sm p-4 mb-4 border-0">
+        <h5 class="mb-4 fw-bold text-primary"><i class="bi bi-person-plus-fill me-2"></i>Register New Student</h5>
+        <form method="POST" action="{{ url_for('students') }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Full Name</label>
+                    <input type="text" name="name" class="form-control border-0 bg-light py-2" placeholder="Full Name" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Roll Number</label>
+                    <input type="number" name="roll" class="form-control border-0 bg-light py-2" placeholder="101" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Class</label>
+                    <select name="class" class="form-select border-0 bg-light py-2" required>
+                        <option value="">Select</option>
+                        {% for i in range(1,13) %}
+                        <option value="{{i}}">Class {{i}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Section</label>
+                    <input type="text" name="section" class="form-control border-0 bg-light py-2" placeholder="A">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100 btn-custom py-2 shadow-sm">Add Student</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {# Bulk Promotion Tool #}
+    <div class="mb-4">
+        <button class="btn btn-sm btn-outline-primary rounded-pill mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#promotionTool">
+            <i class="bi bi-arrow-up-circle me-1"></i> Bulk Promote Class
         </button>
 
-        <div class="collapse navbar-collapse" id="acetNav">
-            <ul class="navbar-nav mx-auto">
-                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About Us</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('courses') }}">Courses</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('contact') }}">Contact</a></li>
-                
-                {% if session.get('user_role') %}
-                    <li class="nav-item">
-                        <a class="nav-link text-primary" href="{{ url_for('dashboard') }}">
-                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-            
-            <div class="d-flex align-items-center gap-3">
-                {% if not session.get('user_role') %}
-                    <a href="{{ url_for('admission') }}" class="btn btn-admission px-4 py-2">Admission Open <i class="bi bi-arrow-up-right ms-1"></i></a>
-                {% else %}
-                    <div class="text-end d-none d-md-block lh-1">
-                        <small class="text-muted d-block" style="font-size: 0.6rem; text-transform: uppercase;">{{ session['user_role'] }}</small>
-                        <span class="fw-bold small">{{ session['username'] }}</span>
+        <div class="collapse" id="promotionTool">
+            <div class="card card-body border-primary border-opacity-25 rounded-4 shadow-sm">
+                <form action="{{ url_for('bulk_promote') }}" method="POST" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted">PROMOTE ALL STUDENTS IN:</label>
+                        <select name="source_class" class="form-select form-select-sm border-0 bg-light" required>
+                            <option value="">Select Class</option>
+                            {% for i in range(1, 13) %}
+                            <option value="{{i}}">Class {{i}}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger rounded-0 px-3" onclick="return confirm('Securely sign out?')">Logout</a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</nav>
-
-<div class="container login-section mb-5">
-    <div class="row g-2 justify-content-center row-cols-2 row-cols-md-3">
-        
-        <div class="col">
-            <div class="card auth-card h-100">
-                <div class="card-header-custom bg-teacher p-2" style="font-size: 0.8rem;">Employee Login</div>
-                <div class="card-body p-2">
-                    <form action="/login" method="POST">
-                        <input type="hidden" name="role" value="teacher">
-                        <label class="form-label mb-0" style="font-size: 0.7rem;">User Name :</label>
-                        <input type="text" name="username" class="form-control form-control-sm mb-1">
-                        
-                        <label class="form-label mb-0" style="font-size: 0.7rem;">Password :</label>
-                        <input type="password" name="password" class="form-control form-control-sm mb-2">
-                        
-                        <div class="text-center">
-                            <img src="https://cdn-icons-png.flaticon.com/512/206/206857.png" width="40" class="mb-1">
-                            <button type="submit" class="btn btn-sm btn-login bg-teacher w-100" style="font-size: 0.7rem;">Login</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="card auth-card h-100">
-                <div class="card-header-custom bg-student p-2" style="font-size: 0.8rem;">Student Login</div>
-                <div class="card-body p-2">
-                    <form action="/login" method="POST">
-                        <input type="hidden" name="role" value="student">
-                        <label class="form-label mb-0" style="font-size: 0.7rem;">User Name :</label>
-                        <input type="text" name="username" class="form-control form-control-sm mb-1">
-                        
-                        <label class="form-label mb-0" style="font-size: 0.7rem;">Password :</label>
-                        <input type="password" name="password" class="form-control form-control-sm mb-2">
-                        
-                        <div class="text-center">
-                            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135810.png" width="40" class="mb-1">
-                            <button type="submit" class="btn btn-sm btn-login bg-student w-100" style="font-size: 0.7rem;">Login</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card auth-card">
-                <div class="card-header-custom bg-parent">Parent Login / Signup</div>
-                <div class="card-body">
-                    <form action="/login" method="POST">
-                        <input type="hidden" name="role" value="parent">
-                        <div class="mb-3">
-                            <label class="form-label">User Name :</label>
-                            <input type="text" name="username" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password :</label>
-                            <input type="password" name="password" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <img src="https://cdn-icons-png.flaticon.com/512/4128/4128176.png" class="avatar-img" alt="Parent">
-                            <button type="submit" class="btn btn-login bg-parent border-0">Login</button>
-                        </div>
-                        <a href="/signup" class="toggle-link text-center">New Parent? Register here</a>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
-=================================================
-base.html 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SPSEBS - SOUTH POINT S.E.C E.N.G B.O.A SCHOOL(+2)</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --acet-maroon: #800000; /* Institutional Maroon */
-            --acet-blue: #007bff;
-            --acet-bg: #fcfcfd;
-        }
-        
-        body { 
-            background-color: var(--acet-bg); 
-            font-family: 'Inter', sans-serif; 
-            color: #2c3e50;
-            scroll-behavior: smooth;
-        }
-
-        /* 1. Official Top Utility Bar */
-        .top-bar { 
-            background: var(--acet-maroon); 
-            color: white; 
-            font-size: 0.82rem; 
-            padding: 10px 0; 
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .top-bar a { color: rgba(255,255,255,0.9); text-decoration: none; margin-right: 20px; transition: 0.2s; }
-        .top-bar a:hover { color: white; }
-
-        /* 2. Professional Navigation Bar */
-        .navbar { background: white; border-bottom: 1px solid #eee; padding: 15px 0; }
-        .navbar-brand { font-size: 1.6rem; letter-spacing: -0.5px; font-weight: 700; }
-        .nav-link { 
-            font-weight: 600; 
-            color: #4a5568 !important; 
-            font-size: 0.9rem; 
-            padding: 0 15px !important; 
-            text-transform: uppercase;
-        }
-        .nav-link:hover, .nav-link.active { color: var(--acet-maroon) !important; }
-
-        /* 3. Split Hero Layout */
-        .hero-split-container { background: white; border-bottom: 1px solid #eee; overflow: hidden; }
-        
-        .hero-text-side { padding: 100px 60px; }
-        
-        .hero-image-side { 
-            /* High-quality campus image */
-            background-image: url('https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=2000'); 
-            background-size: cover; 
-            background-position: center; 
-            min-height: 600px; /* Fixed height ensures image visibility */
-            position: relative;
-        }
-
-        /* Legacy Badge Overlay */
-        .legacy-badge {
-            position: absolute;
-            bottom: 40px;
-            left: 40px;
-            background: white;
-            padding: 20px 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            border-left: 5px solid var(--acet-maroon);
-            z-index: 10;
-        }
-
-        /* 4. Action Buttons */
-        .btn-admission { 
-            border: 1px solid #333; 
-            color: #333; 
-            font-weight: 700; 
-            padding: 8px 20px; 
-            text-decoration: none; 
-            font-size: 0.85rem; 
-            transition: 0.3s;
-        }
-        .btn-admission:hover { background: #333; color: white; }
-
-        .btn-apply { background: #212529; color: white; border: none; padding: 15px 35px; font-weight: 700; transition: 0.3s; }
-        .btn-apply:hover { background: #000; transform: translateY(-3px); }
-
-        .btn-portal-login { border: 1px solid #dee2e6; color: #212529; padding: 15px 35px; font-weight: 700; text-decoration: none; }
-        .btn-portal-login:hover { background: #f8f9fa; }
-
-        /* Auth styling */
-        .user-identity { font-size: 0.85rem; line-height: 1.2; }
-        .btn-logout { border: 1px solid #dc3545; color: #dc3545; font-size: 0.8rem; padding: 4px 12px; text-decoration: none; }
-        .btn-logout:hover { background: #dc3545; color: white; }
-
-        footer { background: #1a1a1a; color: #fff; padding: 60px 0 40px; font-size: 0.9rem; }
-        
-    </style>
-</head>
-<body>
-
-<div class="top-bar d-none d-lg-block">
-    <div class="container d-flex justify-content-between align-items-center">
-        <div class="d-flex gap-4">
-            <a href="{{ url_for('calendar') }}"><i class="bi bi-calendar3-event me-2"></i>Academic Calendar</a>
-            <a href="#"><i class="bi bi-briefcase me-2"></i>Careers</a>
-            <a href="#"><i class="bi bi-book-half me-2"></i>Library</a>
-        </div>
-        <div class="small fw-semibold">
-            <span class="me-4"><i class="bi bi-telephone-fill me-2"></i> +977 46-520901</span>
-            <span><i class="bi bi-envelope-fill me-2"></i> info.spsebs01@gmail.com</span>
-        </div>
-    </div>
-</div>
-
-<nav class="navbar navbar-expand-lg sticky-top shadow-sm">
-    <div class="container">
-        <a class="navbar-brand" href="/">
-            <span style="color: var(--acet-blue);">SPSEBS</span> <span class="text-dark">Portal</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#acetNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="acetNav">
-            <ul class="navbar-nav mx-auto">
-                {% if session.get('user_role') %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Overview</a></li>
-                    {% if session['user_role'] == 'teacher' %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('students') }}">Academics</a></li>
-                    {% endif %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('attendance') }}">Attendance</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('marks') }}">Examination</a></li>
-                     <li class="nav-item"><a class="nav-link" href="{{ url_for('timetable') }}">TimeTable</a></li>
-                {% else %}
-                    <li class="nav-item"><a class="nav-link" href="/">HOME</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">ABOUT US</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('courses') }}">COURSES</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('contact') }}">CONTACT</a></li>
-                {% endif %}
-            </ul>
-            
-            <div class="d-flex align-items-center">
-                {% if session.get('user_role') %}
-                    <div class="user-identity me-3 text-end d-none d-md-block">
-                        <span class="fw-bold text-dark d-block">{{ session['username']|upper }}</span>
-                        <small class="text-muted d-block" style="font-size: 0.65rem;">{{ session['user_role']|upper }} ACCESS</small>
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted">TO NEW BATCH YEAR:</label>
+                        <input type="text" name="new_batch" class="form-control form-control-sm border-0 bg-light" placeholder="e.g. 2027" required>
                     </div>
-                    <a href="{{ url_for('logout') }}" class="btn btn-logout" onclick="return confirm('Sign out?')">Logout</a>
-                {% else %}
-                    <a href="{{ url_for('admission') }}" class="btn-admission">ADMISSION OPEN</a>
-                {% endif %}
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill fw-bold" onclick="return confirm('This will update ALL students in the selected class. Continue?')">
+                            Execute Promotion
+                        </button>
+                    </div>
+                </form>
+                <p class="small text-muted mt-2 mb-0"><i class="bi bi-info-circle me-1"></i> Use this at the end of a session to move students to their next graduation year.</p>
             </div>
         </div>
     </div>
-</nav>
-<div class="container-fluid p-0">
-    {% block content %}{% endblock %}
+    {% endif %}
+
+    {# 2. Class Filter Bar #}
+    <div class="mb-4">
+        <h6 class="fw-bold text-muted small mb-3 text-uppercase">Filter by Grade</h6>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('students', batch=request.args.get('batch')) }}" class="badge rounded-pill bg-light text-dark border p-2 px-3 text-decoration-none filter-pill {% if not request.args.get('class') %}bg-primary text-white border-primary{% endif %}">All Classes</a>
+            {% for i in range(1, 13) %}
+            <a href="{{ url_for('students', class=i, batch=request.args.get('batch')) }}" class="badge rounded-pill bg-light text-dark border p-2 px-3 text-decoration-none filter-pill {% if request.args.get('class') == i|string %}bg-primary text-white border-primary{% endif %}">
+                Class {{i}}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# 3. Year/Batch Filter Bar #}
+    <div class="mb-5">
+        <h6 class="fw-bold text-muted small mb-3 text-uppercase">Filter by Year (Batch)</h6>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('students', class=request.args.get('class')) }}" 
+               class="btn btn-sm rounded-pill {% if not request.args.get('batch') %}btn-dark{% else %}btn-outline-dark{% endif %}">
+               All Years
+            </a>
+            {% for year in batches %}
+                {% if year %}
+                <a href="{{ url_for('students', batch=year, class=request.args.get('class')) }}" 
+                   class="btn btn-sm rounded-pill {% if request.args.get('batch') == year|string %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                   Batch {{ year }}
+                </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {# 4. Grouped Student List by Batch #}
+    {% if request.args.get('class') or request.args.get('batch') %}
+        {% if students %}
+            {% for batch_year, batch_students in students|groupby('batch', default='Unassigned') %}
+                <div class="batch-section mb-5">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-dark text-white px-4 py-2 rounded-pill shadow-sm fw-bold">
+                            <i class="bi bi-calendar-check me-2"></i> Batch {{ batch_year }}
+                        </div>
+                        <div class="ms-3 flex-grow-1 border-bottom opacity-25"></div>
+                    </div>
+
+                    <div class="row g-4">
+                        {% for s in batch_students %}
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100 table-card">
+                                <div class="mx-auto mb-2" style="width: 70px; height: 70px; border-radius: 50%; overflow: hidden; background: #f8f9fa;">
+                                    <img src="{{ s.photo_path if s.photo_path else '/static/default.png' }}" 
+                                         class="w-100 h-100" style="object-fit: cover;">
+                                </div>
+                                <h6 class="fw-bold mb-1 student-name">{{ s.name }}</h6>
+                                <p class="small text-muted mb-3">Roll: {{ s.roll_no }} | Class {{ s.class }}</p>
+                                
+                                <div class="d-grid gap-2">
+                                    <a href="{{ url_for('student_profile', id=s._id|string) }}" 
+                                       class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm">
+                                        <i class="bi bi-eye-fill"></i> Profile
+                                    </a>
+                                    
+                                    {% if session['user_role'] == 'teacher' %}
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-outline-warning border-0 rounded-circle" 
+                                                onclick="editStudent('{{s._id}}', '{{s.name}}', '{{s.roll_no}}', '{{s.class}}', '{{s.section}}', '{{s.batch}}')">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <a href="{{ url_for('delete_student', id=s._id|string) }}" 
+                                           class="btn btn-sm btn-outline-danger border-0 rounded-circle"
+                                           onclick="return confirm('Delete this student?')">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-search text-muted fs-1"></i>
+                <p class="text-muted mt-2">No students found matching this criteria.</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm mb-5">
+            <div class="mb-3"><i class="bi bi-funnel text-primary" style="font-size: 3rem;"></i></div>
+            <h5 class="fw-bold">Ready to search?</h5>
+            <p class="text-muted">Please select a <b>Grade</b> or <b>Batch Year</b> above to view the student list.</p>
+        </div>
+    {% endif %}
 </div>
 
-<footer class="mt-5 text-center">
-    <div class="container">
-        <h6 class="fw-bold">SOUTH   POINT   S.E.C   E.N.G    B.O.A   SCHOOL(+2)</h6>
-        <p class="small text-secondary mb-4">An Autonomous Institution | Accredited by NBA & NAAC</p>
-        <div class="d-flex justify-content-center gap-4 mb-4">
-            <a href="https://www.facebook.com/sonal.karna.7" class="text-white"><i class="bi bi-facebook fs-5"></i></a>
-            <a href="https://www.linkedin.com/in/sonal-karna-212980352/" class="text-white"><i class="bi bi-linkedin fs-5"></i></a>
-        </div>
-        <hr class="border-secondary opacity-25">
-        <p class="small text-secondary mb-0">© 2026 SPSEBS Portal | Powered by Institutional Management System.</p>
+{# 5. Edit Modal for Teachers #}
+{% if session['user_role'] == 'teacher' %}
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="/update_student" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header bg-primary text-white py-4" style="border-radius: 25px 25px 0 0;">
+                <h5 class="modal-title fw-bold">Update Student Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" name="id" id="edit-id">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Full Name</label>
+                    <input type="text" name="name" id="edit-name" class="form-control bg-light border-0 py-2" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small">Roll No</label>
+                        <input type="number" name="roll" id="edit-roll" class="form-control bg-light border-0 py-2" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small">Class</label>
+                        <select name="class" id="edit-class" class="form-select bg-light border-0 py-2">
+                            {% for i in range(1,13) %}
+                            <option value="{{i}}">Class {{i}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Section</label>
+                    <input type="text" name="section" id="edit-section" class="form-control bg-light border-0 py-2">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-primary">BATCH / YEAR</label>
+                    <input type="text" name="batch" id="edit-batch" class="form-control bg-light border-0 py-2" required>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold">Save Profile</button>
+            </div>
+        </form>
     </div>
-</footer>
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<script>
+function editStudent(id, name, roll, cls, sec, batch) {
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-roll').value = roll;
+    document.getElementById('edit-class').value = cls;
+    document.getElementById('edit-section').value = sec;
+    document.getElementById('edit-batch').value = batch || '';
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+</script>
+{% endif %}
+
+{% endblock %}

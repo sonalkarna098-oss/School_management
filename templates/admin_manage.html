@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    /* Admin Dashboard Specific Styles */
+    .admin-header { 
+        background: linear-gradient(135deg, #2c3e50, #000000); 
+        color: white; 
+        padding: 60px 0; 
+        border-radius: 0 0 50px 50px; 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .management-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        background: white;
+    }
+
+    .form-control, .form-select {
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        background-color: #f8f9fa;
+    }
+
+    .btn-generate {
+        background: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 30px;
+        padding: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        transition: 0.3s;
+    }
+
+    .btn-generate:hover {
+        background: #000000;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .table thead th {
+        background-color: #f8f9fa;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        color: #6c757d;
+        border: none;
+    }
+
+    /* Role Badges */
+    .badge-admin { background-color: #2c3e50; }
+    .badge-teacher { background-color: #8e24aa; }
+    .badge-student { background-color: #fb8c00; }
+    .badge-parent { background-color: #039be5; }
+</style>
+
+<div class="admin-header mb-5">
+    <div class="container text-center">
+        <h1 class="fw-bold">System Administration</h1>
+        <p class="opacity-75">User Credential Generation & Access Management</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-4">
+        
+        <div class="col-lg-4">
+            <div class="card management-card p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-dark text-white p-2 rounded-circle me-3" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-person-plus-fill fs-5"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Generate User</h5>
+                </div>
+
+                <form action="/admin/manage_users" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Portal Role</label>
+                        <select name="role" class="form-select" required>
+                            <option value="" selected disabled>Select Role...</option>
+                            <option value="teacher">Faculty / Teacher</option>
+                            <option value="student">Student</option>
+                            <option value="parent">Parent</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="Enter unique username" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Temporary Password</label>
+                        <input type="text" name="password" class="form-control" placeholder="Enter secure password" required>
+                        <small class="text-muted mt-1 d-block">This will be hashed securely in the database.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-generate w-100 shadow-sm">
+                        Create Account <i class="bi bi-shield-check ms-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card management-card overflow-hidden">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Active User Directory</h5>
+                    <span class="badge bg-light text-dark border">{{ users|length }} Total Users</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Username</th>
+                                <th>Role</th>
+                                <th>Password (Hashed)</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px;">
+                                            <i class="bi bi-person-fill text-secondary"></i>
+                                        </div>
+                                        <span class="fw-bold text-dark">{{ user.username }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill px-3 py-2 badge-{{ user.role }}">
+                                        {{ user.role|upper }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <code class="text-muted small" title="{{ user.password }}">
+                                        {{ user.password[:15] }}...
+                                    </code>
+                                </td>
+                                <td class="text-end pe-4">
+                                    {% if user.username != session['username'] %}
+                                    <a href="{{ url_for('delete_user', id=user._id|string) }}" 
+                                       class="btn btn-sm btn-outline-danger border-0 rounded-circle" 
+                                       onclick="return confirm('Permanently revoke access for this user?')">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted small italic">Current User</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="bi bi-people fs-1 d-block mb-3 opacity-25"></i>
+                                    No users found in the directory.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

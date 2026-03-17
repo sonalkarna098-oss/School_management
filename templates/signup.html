@@ -3,8 +3,6 @@
 
 <style>
     body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
-
-    /* Layout Styling for Cards */
     .signup-section { margin-top: 60px; padding-bottom: 80px; }
     
     .auth-card { 
@@ -20,15 +18,14 @@
     .auth-card:hover { 
         transform: translateY(-12px); 
         box-shadow: 0 20px 40px rgba(0,0,0,0.12);
-        border: 1px solid #eee;
     }
 
-    /* Role Specific Gradients - Matching login.html */
+    /* Role Specific Gradients */
+    .bg-admin { background: linear-gradient(135deg, #2c3e50, #000000) !important; } 
     .bg-teacher { background: linear-gradient(135deg, #8e24aa, #6a1b9a) !important; } 
     .bg-student { background: linear-gradient(135deg, #fb8c00, #ef6c00) !important; } 
     .bg-parent { background: linear-gradient(135deg, #039be5, #0277bd) !important; }  
 
-    /* Icon Circle Styling */
     .icon-box {
         width: 80px;
         height: 80px;
@@ -41,39 +38,9 @@
         font-size: 2.5rem;
     }
 
-    /* Form Elements */
-    .form-control { 
-        border-radius: 12px; 
-        padding: 12px; 
-        border: 1px solid #e0e0e0; 
-        font-size: 0.9rem;
-    }
-    .form-control:focus { 
-        box-shadow: 0 0 0 4px rgba(0,123,255,0.1); 
-        border-color: #007bff; 
-    }
-
-    .btn-signup {
-        border-radius: 30px;
-        padding: 12px 30px;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        transition: 0.3s;
-        border: none;
-        color: white;
-        width: 100%;
-    }
-
-    .back-link { 
-        font-size: 0.85rem; 
-        display: block; 
-        margin-top: 20px; 
-        color: #6c757d; 
-        text-decoration: none; 
-        font-weight: 600;
-    }
-    .back-link:hover { color: #000; }
+    .form-control { border-radius: 12px; padding: 12px; border: 1px solid #e0e0e0; font-size: 0.9rem; }
+    .btn-signup { border-radius: 30px; padding: 12px 30px; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; transition: 0.3s; border: none; color: white; width: 100%; }
+    .back-link { font-size: 0.85rem; display: block; margin-top: 20px; color: #6c757d; text-decoration: none; font-weight: 600; }
 </style>
 
 <div class="container signup-section">
@@ -83,79 +50,93 @@
     </div>
 
     <div class="row g-4 justify-content-center">
-        
-        <div class="col-12 col-md-4">
-            <div class="card auth-card p-4">
+        <div class="col-12 col-md-3">
+            <div class="card auth-card p-4 text-center">
+                <div class="icon-box bg-admin shadow-sm">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <h4 class="fw-bold mb-3">ADMIN</h4>
+                <form action="/signup" method="POST">
+                    <input type="hidden" name="role" value="admin">
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold small text-muted">ADMIN USERNAME</label>
+                        <input type="text" name="username" class="form-control" placeholder="Admin_ID" required>
+                    </div>
+                    <div class="mb-4 text-start">
+                        <label class="form-label fw-bold small text-muted">PASSWORD</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-signup bg-admin">Create Admin</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <div class="card auth-card p-4 text-center">
                 <div class="icon-box bg-teacher shadow-sm">
                     <i class="bi bi-person-badge"></i>
                 </div>
-                <h4 class="fw-bold mb-3 text-center">FACULTY</h4>
+                <h4 class="fw-bold mb-3">FACULTY</h4>
                 <form action="/signup" method="POST">
                     <input type="hidden" name="role" value="teacher">
-                    <div class="mb-3">
+                    <div class="mb-3 text-start">
                         <label class="form-label fw-bold small text-muted">FULL NAME</label>
                         <input type="text" name="username" class="form-control" placeholder="Faculty" required>
                     </div>
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted">CREATE PASSWORD</label>
+                    <div class="mb-4 text-start">
+                        <label class="form-label fw-bold small text-muted">PASSWORD</label>
                         <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn btn-signup bg-teacher">Create Faculty Account</button>
+                    <button type="submit" class="btn btn-signup bg-teacher">Create Faculty</button>
                 </form>
-                <div class="text-center">
-                    <a href="/login" class="back-link">← Back to Login</a>
-                </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-4">
-            <div class="card auth-card p-4">
+        <div class="col-12 col-md-3">
+            <div class="card auth-card p-4 text-center">
                 <div class="icon-box bg-student shadow-sm">
                     <i class="bi bi-mortarboard"></i>
                 </div>
-                <h4 class="fw-bold mb-3 text-center">STUDENT</h4>
+                <h4 class="fw-bold mb-3">STUDENT</h4>
                 <form action="/signup" method="POST">
                     <input type="hidden" name="role" value="student">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">ROLL NO / USERNAME</label>
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold small text-muted">ROLL NO</label>
                         <input type="text" name="username" class="form-control" placeholder="STU-12345" required>
                     </div>
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted">CREATE PASSWORD</label>
+                    <div class="mb-4 text-start">
+                        <label class="form-label fw-bold small text-muted">PASSWORD</label>
                         <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn btn-signup bg-student">Create Student Account</button>
+                    <button type="submit" class="btn btn-signup bg-student">Create Student</button>
                 </form>
-                <div class="text-center">
-                    <a href="/login" class="back-link">← Back to Login</a>
-                </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-4">
-            <div class="card auth-card p-4">
+        <div class="col-12 col-md-3">
+            <div class="card auth-card p-4 text-center">
                 <div class="icon-box bg-parent shadow-sm">
                     <i class="bi bi-people"></i>
                 </div>
-                <h4 class="fw-bold mb-3 text-center">PARENT</h4>
+                <h4 class="fw-bold mb-3">PARENT</h4>
                 <form action="/signup" method="POST">
                     <input type="hidden" name="role" value="parent">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">PARENT USERNAME</label>
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold small text-muted">USERNAME</label>
                         <input type="text" name="username" class="form-control" placeholder="Parent_Name" required>
                     </div>
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted">CREATE PASSWORD</label>
+                    <div class="mb-4 text-start">
+                        <label class="form-label fw-bold small text-muted">PASSWORD</label>
                         <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn btn-signup bg-parent">Create Parent Account</button>
+                    <button type="submit" class="btn btn-signup bg-parent">Create Parent</button>
                 </form>
-                <div class="text-center">
-                    <a href="/login" class="back-link">← Back to Login</a>
-                </div>
             </div>
         </div>
-
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="/login" class="back-link">← Already have an account? Back to Login</a>
     </div>
 </div>
 

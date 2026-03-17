@@ -11,6 +11,7 @@
     .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
     .table-card { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
     .marks-input { width: 80px; text-align: center; font-weight: bold; border-radius: 8px; border: 1px solid #ddd; }
+    .dashboard-badge { font-size: 0.75rem; padding: 5px 12px; }
 </style>
 
 <div class="marks-header mb-5">
@@ -22,22 +23,49 @@
 
 <div class="container">
     <div class="row g-4 mb-5">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card stat-card bg-white p-4 shadow-sm text-center h-100">
                 <h6 class="text-muted text-uppercase small fw-bold">Current Session</h6>
                 <h3 class="fw-bold text-primary">2026-27</h3>
             </div>
         </div>
         
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">Quick Student Search</h6>
+                <div class="row g-2">
+                    <div class="col-7">
+                        <div class="input-group">
+                            <span class="input-group-text border-0 bg-light px-2"><i class="bi bi-person text-primary"></i></span>
+                            <input type="text" id="studentSearchName" class="form-control border-0 bg-light py-2" placeholder="Name...">
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <select id="studentSearchClass" class="form-select border-0 bg-light py-2">
+                            <option value="">All Classes</option>
+                            {% for i in range(1, 13) %}
+                            <option value="{{i}}">Class {{i}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <button class="btn btn-primary w-100 fw-bold rounded-3 transition-all" onclick="viewStudentDashboard()">
+                            <i class="bi bi-search me-2"></i>View Performance
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {% if session['user_role'] == 'teacher' %}
-        <div class="col-md-8">
+        <div class="col-md-4">
             <div class="card stat-card bg-dark text-white p-4 shadow-sm d-flex flex-row align-items-center justify-content-between h-100" 
                  data-bs-toggle="modal" data-bs-target="#marksModal">
                 <div>
-                    <h4 class="fw-bold mb-0">Record Entry</h4>
-                    <p class="small opacity-75 mb-0">Select class and subject to enter student marks</p>
+                    <h5 class="fw-bold mb-0">Record Entry</h5>
+                    <p class="small opacity-75 mb-0">Enter marks by class</p>
                 </div>
-                <i class="bi bi-pencil-square fs-1 text-primary"></i>
+                <i class="bi bi-pencil-square fs-2 text-primary"></i>
             </div>
         </div>
         {% endif %}
@@ -49,7 +77,7 @@
                 <label class="form-label small fw-bold text-uppercase">Class</label>
                 <select name="class_no" class="form-select border-0 shadow-sm">
                     <option value="">Select Class</option>
-                    {% for i in range(1,11) %}
+                    {% for i in range(1,13) %}
                     <option value="{{i}}" {% if selected_class == i|string %}selected{% endif %}>Class {{i}}</option>
                     {% endfor %}
                 </select>
@@ -89,7 +117,7 @@
                         <td class="text-end pe-4">
                             {% if session['user_role'] == 'teacher' %}
                             <button class="btn btn-sm btn-outline-warning border-0 rounded-circle me-2" 
-                                    onclick="editMark('{{m._id}}', '{{m.student_name}}', '{{m.subject}}', '{{m.marks}}', '{{m.exam}}')">
+                                    onclick="editMark('{{m._id}}', '{{m.student_name}}', '{{m.subject}}', '{{m.marks}}', '{{m.exam}}', '{{m.status}}')">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
                             <a href="{{ url_for('delete_mark', id=m._id|string) }}" 
@@ -107,6 +135,18 @@
     </div>
 </div>
 
+<div class="modal fade" id="studentDashboardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header bg-primary text-white border-0 py-4" style="border-radius: 25px 25px 0 0;">
+                <h5 class="modal-title fw-bold px-3"><i class="bi bi-speedometer2 me-2"></i>Performance Dashboard</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="dashboardContent"></div>
+        </div>
+    </div>
+</div>
+
 {% if session['user_role'] == 'teacher' %}
 <div class="modal fade" id="marksModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -115,24 +155,32 @@
                 <h5 class="modal-title fw-bold px-3">Academic Performance Entry</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            
             <form action="{{ url_for('marks') }}" method="POST">
                 <div class="modal-body p-4">
                     <div class="row mb-4">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Class</label>
                             <select name="class" id="modalClassSelectMarks" class="form-select border-0 bg-light rounded-3 py-2" required>
                                 <option value="" selected disabled>Select...</option>
-                                {% for i in range(1,11) %}
+                                {% for i in range(1,13) %}
                                     <option value="{{ i }}">Class {{ i }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Batch</label>
+                            <select id="modalBatchSelectMarks" class="form-select border-0 bg-light rounded-3 py-2">
+                                <option value="2026" selected>2026</option>
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                                <option value="Unassigned">Unassigned</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Subject</label>
                             <input type="text" name="subject" class="form-control border-0 bg-light rounded-3 py-2" placeholder="Subject Name" required>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Exam Type</label>
                             <select name="exam" class="form-select border-0 bg-light rounded-3 py-2" required>
                                 <option value="Mid Term">Mid Term</option>
@@ -141,7 +189,6 @@
                             </select>
                         </div>
                     </div>
-
                     <div id="studentListContainerMarks">
                         <div class="text-center py-5 text-muted">
                             <i class="bi bi-journal-text fs-1 d-block mb-2"></i>
@@ -181,13 +228,20 @@
                         <input type="number" name="marks" id="edit-m-marks" class="form-control bg-light border-0" min="0" max="100" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold small text-muted">EXAM TYPE</label>
-                        <select name="exam" id="edit-m-exam" class="form-select bg-light border-0">
-                            <option value="Mid Term">Mid Term</option>
-                            <option value="Final Exam">Final Exam</option>
-                            <option value="Class Test">Class Test</option>
+                        <label class="form-label fw-bold small text-muted">STATUS</label>
+                        <select name="status" id="edit-m-status" class="form-select bg-light border-0">
+                            <option value="PASS">PASS</option>
+                            <option value="FAIL">FAIL</option>
                         </select>
                     </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">EXAM TYPE</label>
+                    <select name="exam" id="edit-m-exam" class="form-select bg-light border-0">
+                        <option value="Mid Term">Mid Term</option>
+                        <option value="Final Exam">Final Exam</option>
+                        <option value="Class Test">Class Test</option>
+                    </select>
                 </div>
             </div>
             <div class="modal-footer border-0 p-4">
@@ -199,36 +253,129 @@
 {% endif %}
 
 <script>
-function editMark(id, name, subject, marks, exam) {
+// 1. Dashboard Search Logic
+function viewStudentDashboard() {
+    const nameInput = document.getElementById('studentSearchName').value.trim();
+    const classInput = document.getElementById('studentSearchClass').value;
+    
+    if(!nameInput) { 
+        alert("Please enter a student name to begin."); 
+        return; 
+    }
+
+    const container = document.getElementById('dashboardContent');
+    container.style.opacity = '0';
+    container.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted animate__animated animate__fadeIn">Fetching records...</p>
+        </div>`;
+    
+    new bootstrap.Modal(document.getElementById('studentDashboardModal')).show();
+
+    let url = `/get_student_performance/${encodeURIComponent(nameInput)}?class=${classInput}`;
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.length === 0) {
+                container.innerHTML = `<div class="text-center py-5 text-muted animate__animated animate__shakeX">No records found for "${nameInput}" in Class ${classInput || 'All'}.</div>`;
+                container.style.opacity = '1';
+                return;
+            }
+
+            const categories = ["Mid Term", "Final Exam", "Class Test"];
+            let html = `
+                <div class="d-flex justify-content-between align-items-center mb-4 bg-light p-3 rounded-4">
+                    <h4 class="fw-bold mb-0 text-primary">${nameInput}</h4>
+                    <span class="badge bg-dark rounded-pill px-3">${data.length} Total Records</span>
+                </div>`;
+
+            categories.forEach(examType => {
+                const filtered = data.filter(item => item.exam === examType);
+                if (filtered.length > 0) {
+                    html += `
+                        <div class="mb-4">
+                            <h6 class="text-uppercase fw-bold text-muted small mb-3 px-2">${examType} Results</h6>
+                            <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr class="text-muted small text-uppercase">
+                                            <th class="ps-3">Subject</th>
+                                            <th class="text-center">Marks</th>
+                                            <th class="text-end pe-3">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                    
+                    filtered.forEach(item => {
+                        const statusText = item.status || "N/A"; 
+                        let statusColor = 'secondary'; 
+                        if (statusText === 'PASS') statusColor = 'success';
+                        else if (statusText === 'FAIL') statusColor = 'danger';
+
+                        html += `
+                            <tr>
+                                <td class="ps-3 fw-bold">${item.subject}</td>
+                                <td class="text-center fw-bold text-primary">${item.marks}</td>
+                                <td class="text-end pe-3">
+                                    <span class="badge bg-${statusColor}-subtle text-${statusColor} dashboard-badge">${statusText}</span>
+                                </td>
+                            </tr>`;
+                    });
+                    html += `</tbody></table></div></div>`;
+                }
+            });
+
+            container.innerHTML = html;
+            container.style.transition = 'opacity 0.4s ease-in-out';
+            setTimeout(() => { container.style.opacity = '1'; }, 50);
+        })
+        .catch(() => {
+            container.innerHTML = '<p class="text-danger text-center">Connection error. Please try again.</p>';
+            container.style.opacity = '1';
+        });
+}
+
+// 2. Edit Mark Logic
+function editMark(id, name, subject, marks, exam, status) {
     document.getElementById('edit-m-id').value = id;
     document.getElementById('edit-m-name').value = name;
     document.getElementById('edit-m-subject').value = subject;
     document.getElementById('edit-m-marks').value = marks;
     document.getElementById('edit-m-exam').value = exam;
+    
+    const statusField = document.getElementById('edit-m-status');
+    if (statusField && status) {
+        statusField.value = status;
+    }
+    
     new bootstrap.Modal(document.getElementById('editMarkModal')).show();
 }
 
-document.getElementById('modalClassSelectMarks').addEventListener('change', function() {
-    const className = this.value;
-    const container = document.getElementById('studentListContainerMarks');
-    
-    container.innerHTML = `
-        <div class="text-center py-4">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Loading Students...</p>
-        </div>`;
+// 3. Load Students for Entry Logic
+{% if session['user_role'] == 'teacher' %}
+const classSelect = document.getElementById('modalClassSelectMarks');
+const batchSelect = document.getElementById('modalBatchSelectMarks');
 
-    fetch(`/get_students/${className}`)
+function refreshStudentRoster() {
+    const className = classSelect.value;
+    const batchName = batchSelect.value;
+    const container = document.getElementById('studentListContainerMarks');
+
+    if (!className) return;
+
+    container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Loading...</p></div>';
+
+    fetch(`/get_students/${className}?batch=${batchName}`)
         .then(response => response.json())
         .then(data => {
             if (data.length === 0) {
-                container.innerHTML = '<p class="text-center text-danger py-4">No students found.</p>';
+                container.innerHTML = `<p class="text-center text-danger py-4">No students found in Class ${className} for Batch ${batchName}.</p>`;
                 return;
             }
-
             let html = '<p class="text-muted small mb-3 px-2">Enter Marks (Out of 100):</p>';
             html += '<div class="list-group list-group-flush" style="max-height: 350px; overflow-y: auto;">';
-            
             data.forEach(student => {
                 html += `
                 <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 bg-light rounded-4 mb-2 mx-1">
@@ -236,19 +383,23 @@ document.getElementById('modalClassSelectMarks').addEventListener('change', func
                         <h6 class="fw-bold mb-0">${student.name}</h6>
                         <input type="hidden" name="student_ids" value="${student.id}">
                     </div>
-                    <div>
+                    <div class="d-flex gap-2">
                         <input type="number" name="marks_list" class="form-control marks-input" placeholder="0" min="0" max="100" required>
+                        <select name="status_list" class="form-select border-0 shadow-sm" style="width: 100px;">
+                            <option value="PASS">PASS</option>
+                            <option value="FAIL">FAIL</option>
+                        </select>
                     </div>
                 </div>`;
             });
-            
             html += '</div>';
             container.innerHTML = html;
         })
-        .catch(error => {
-            container.innerHTML = '<p class="text-center text-danger py-4">Error loading data.</p>';
-        });
-});
-</script>
+        .catch(() => container.innerHTML = '<p class="text-center text-danger py-4">Error loading data.</p>');
+}
 
+classSelect.addEventListener('change', refreshStudentRoster);
+batchSelect.addEventListener('change', refreshStudentRoster);
+{% endif %}
+</script>
 {% endblock %}

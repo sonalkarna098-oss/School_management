@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                {% if session['user_role'] == 'teacher' %}
+                    <a href="{{ url_for('students') }}" class="text-decoration-none">Student Directory</a>
+                {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="text-decoration-none">Dashboard</a>
+                {% endif %}
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Profile: {{ student.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100">
+                <div class="mx-auto mb-3 shadow-sm" style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden;">
+                    {% if student.photo_path %}
+                        <img src="{{ student.photo_path }}" class="w-100 h-100" style="object-fit: cover;">
+                    {% else %}
+                        <div class="bg-primary text-white w-100 h-100 d-flex align-items-center justify-content-center">
+                            <i class="bi bi-person-fill fs-1"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <h3 class="fw-bold">{{ student.name }}</h3>
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3 mb-4">Class {{ student.class }}</span>
+                
+                <div class="text-start border-top pt-4">
+                    <p class="small mb-2"><strong>Roll No:</strong> {{ student.roll_no }}</p>
+                    <p class="small mb-2"><strong>DOB:</strong> {{ student.dob if student.dob else 'Not Set' }}</p>
+                    <p class="small mb-2"><strong>Parents:</strong> {{ student.parent_name if student.parent_name else 'Not Set' }}</p>
+                    <p class="small mb-2"><strong>Phone:</strong> {{ student.phone if student.phone else 'Not Set' }}</p>
+                    <p class="small mb-0"><strong>Address:</strong> {{ student.address if student.address else 'Not Set' }}</p>
+                </div>
+
+                <div class="mt-4 d-grid gap-2">
+                    {% if session['user_role'] == 'teacher' %}
+                        <button class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#editFullProfileModal">
+                            <i class="bi bi-pencil-square me-2"></i> Edit Details
+                        </button>
+                        <a href="{{ url_for('students') }}" class="btn btn-outline-secondary rounded-pill">
+                            <i class="bi bi-arrow-left me-2"></i> Back to Directory
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary rounded-pill">
+                            <i class="bi bi-house-door me-2"></i> Back to Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 rounded-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-graph-up-arrow me-2"></i>Academic Overview</h5>
+                    <a href="#" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Print Report Card
+                    </a>
+                </div>
+                
+                <div class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold small">Overall Attendance</span>
+                        <span class="badge bg-success rounded-pill">{{ attendance_pct }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ attendance_pct }}%"></div>
+                    </div>
+                    <p class="text-muted small mt-2">Total Days Present: {{ total_days }}</p>
+                </div>
+
+                <h6 class="fw-bold mb-4 small text-muted text-uppercase tracking-wider border-bottom pb-2">Examination Reports</h6>
+
+                {% if marks %}
+                    {% for exam_name, exam_marks in marks|groupby('exam') %}
+                    <div class="exam-group mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-primary-subtle p-2 rounded-3 me-2">
+                                <i class="bi bi-journal-text text-primary"></i>
+                            </div>
+                            <h6 class="fw-bold mb-0">{{ exam_name }}</h6>
+                        </div>
+                        
+                        <div class="table-responsive shadow-sm rounded-3">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="small fw-bold py-3" style="width: 70%;">Subject</th>
+                                        <th class="small fw-bold text-center py-3">Marks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for m in exam_marks %}
+                                    <tr>
+                                        <td class="small">{{ m.subject }}</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary px-3 py-2">{{ m.marks }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5 bg-light rounded-4">
+                        <i class="bi bi-clipboard-x fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No examination marks recorded yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if session['user_role'] == 'teacher' %}
+<div class="modal fade" id="editFullProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form action="/update_student_full" method="POST" enctype="multipart/form-data" class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-dark text-white py-3">
+                <h5 class="modal-title fw-bold">Edit Full Student Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" name="id" value="{{ student._id|string }}">
+                
+                <div class="row g-3">
+                    <div class="col-12 mb-2">
+                        <label class="form-label fw-bold small text-muted">UPLOAD PROFILE PHOTO</label>
+                        <input type="file" name="profile_photo" class="form-control" accept="image/*">
+                    </div>
+
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold small text-primary">STUDENT LOGIN USERNAME</label>
+                        <input type="text" name="username" class="form-control" value="{{ student.username if student.username else '' }}" required>
+                    </div>
+
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-bold small text-success">PARENT LOGIN USERNAME</label>
+                        <input type="text" name="parent_username" class="form-control" value="{{ student.parent_username if student.parent_username else '' }}" placeholder="Parent's login ID">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Full Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ student.name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Father/Guardian Name</label>
+                        <input type="text" name="parent_name" class="form-control" value="{{ student.parent_name }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Roll No</label>
+                        <input type="text" name="roll" class="form-control" value="{{ student.roll_no }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Class</label>
+                        <input type="text" name="class" class="form-control" value="{{ student.class }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Date of Birth</label>
+                        <input type="date" name="dob" class="form-control" value="{{ student.dob }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ student.email }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Phone</label>
+                        <input type="text" name="phone" class="form-control" value="{{ student.phone }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold small">Residential Address</label>
+                        <textarea name="address" class="form-control" rows="2">{{ student.address }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-success rounded-pill px-5 fw-bold">Update Profile</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

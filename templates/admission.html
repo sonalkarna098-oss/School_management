@@ -2,7 +2,6 @@
 {% block content %}
 
 <style>
-    /* Unique Background for Admission Page */
     .admission-wrapper {
         background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
                     url('https://images.unsplash.com/photo-1523050853064-8181f216773a?auto=format&fit=crop&q=80');
@@ -14,7 +13,6 @@
         padding: 50px 0;
     }
 
-    /* Modern Card Styling */
     .admission-card {
         background: rgba(255, 255, 255, 0.95);
         border: none;
@@ -23,7 +21,6 @@
         box-shadow: 0 25px 50px rgba(0,0,0,0.3);
     }
 
-    /* Left Side Info Panel */
     .info-panel {
         background: linear-gradient(135deg, #800000, #b71c1c);
         color: white;
@@ -35,7 +32,6 @@
 
     .form-section { padding: 50px; }
 
-    /* Input Styling */
     .form-control, .form-select {
         border-radius: 12px;
         padding: 12px 15px;
@@ -95,7 +91,7 @@
                                 <div class="step-icon"><i class="bi bi-1-circle-fill"></i></div>
                                 <div>
                                     <h6 class="mb-0 fw-bold">Fill Application</h6>
-                                    <small class="opacity-75">Provide your academic and personal details.</small>
+                                    <small class="opacity-75">Provide academic and personal details.</small>
                                 </div>
                             </div>
 
@@ -117,7 +113,7 @@
 
                             <div class="mt-auto pt-4 border-top border-white border-opacity-25">
                                 <small class="d-block opacity-75">Need help? Contact Admissions Office:</small>
-                                <span class="fw-bold">+91 98765 43210 | help@school.edu</span>
+                                <span class="fw-bold">+977 46-520901 | info.spsebs01@gmail.com</span>
                             </div>
                         </div>
 
@@ -127,13 +123,25 @@
                                 <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill">Session 2026-27</span>
                             </div>
 
-                            <form action="/admission" method="POST">
+                            <form action="/admission" method="POST" enctype="multipart/form-data">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small text-muted">UPLOAD STUDENT PHOTO</label>
+                                    <input type="file" name="student_photo" class="form-control" accept="image/*">
+                                </div>
                                 <div class="row g-3">
                                     <div class="col-12">
                                         <label class="form-label fw-bold small text-muted">FULL NAME (AS PER SSC)</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0"><i class="bi bi-person"></i></span>
-                                            <input type="text" name="full_name" class="form-control" placeholder="Enter your full name" required>
+                                            <input type="text" name="full_name" class="form-control" placeholder="Enter full name" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold small text-muted">FATHER/GUARDIAN NAME</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-0"><i class="bi bi-people"></i></span>
+                                            <input type="text" name="parent_name" class="form-control" placeholder="Enter parent or guardian name" required>
                                         </div>
                                     </div>
 
@@ -144,7 +152,7 @@
 
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small text-muted">PHONE NUMBER</label>
-                                        <input type="tel" name="phone" class="form-control" placeholder="+91" required>
+                                        <input type="tel" name="phone" class="form-control" placeholder="+977" required>
                                     </div>
 
                                     <div class="col-md-6">
@@ -153,19 +161,18 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label fw-bold small text-muted">DESIRED COURSE</label>
+                                        <label class="form-label fw-bold small text-muted">ADMISSION FOR CLASS</label>
                                         <select name="course" class="form-select" required>
-                                            <option value="" selected disabled>Choose Course</option>
-                                            <option value="CSE">Computer Science & Engineering</option>
-                                            <option value="ECE">Electronics & Communication</option>
-                                            <option value="MECH">Mechanical Engineering</option>
-                                            <option value="CIVIL">Civil Engineering</option>
+                                            <option value="" selected disabled>Select Class</option>
+                                            {% for i in range(1, 11) %}
+                                            <option value="{{ i }}">Class {{ i }}</option>
+                                            {% endfor %}
                                         </select>
                                     </div>
 
                                     <div class="col-12">
                                         <label class="form-label fw-bold small text-muted">RESIDENTIAL ADDRESS</label>
-                                        <textarea name="address" class="form-control" rows="3" placeholder="Street, City, State, ZIP..." required></textarea>
+                                        <textarea name="address" class="form-control" rows="3" placeholder="City, State, ZIP..." required></textarea>
                                     </div>
 
                                     <div class="col-12 mt-4">
@@ -182,12 +189,10 @@
                                 </div>
                             </form>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock %}

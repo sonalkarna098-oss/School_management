@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="thank-you-wrapper position-relative overflow-hidden">
+    <div class="thanks-bg"></div>
+    <div class="thanks-overlay"></div>
+
+    <div class="container position-relative py-5 text-center text-white" style="z-index: 10; min-height: 70vh; display: flex; flex-direction: column; justify-content: center;">
+        
+        <div class="mb-4">
+            <i class="bi bi-envelope-check-fill display-1 shadow-icon"></i>
+        </div>
+
+        <h1 class="display-2 fw-bold mb-3 tracking-tighter">THANK YOU!</h1>
+        
+        <p class="lead mb-5 mx-auto" style="max-width: 600px; opacity: 0.9;">
+            Your query application for the <strong>2026 Academic Session</strong> has been submitted. 
+            Our academic office will review your details and be in touch shortly via email!
+        </p>
+
+        <div class="social-share mt-4">
+            <p class="small fw-bold text-uppercase mb-3" style="color: #ffc107;">Stay Connected with ACET</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="https://www.facebook.com/sonal.karna.7" class="social-btn bg-facebook"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="social-btn bg-google"><i class="bi bi-google"></i></a>
+                <a href="https://www.linkedin.com/in/sonal-karna-212980352/" class="social-btn bg-linkedin"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <a href="/" class="btn btn-outline-light rounded-0 px-4 fw-bold">Return to Homepage</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .thank-you-wrapper { min-height: 70vh; }
+    
+    /* Background & Blur Logic */
+    .thanks-bg {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-image: url('https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?auto=format&fit=crop&q=80&w=2000');
+        background-size: cover;
+        background-position: center;
+        filter: blur(8px) brightness(0.6);
+        transform: scale(1.1);
+        z-index: 1;
+    }
+    
+    .thanks-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0.8, 0, 0, 0.4); /* ACET Maroon Tint */
+        z-index: 2;
+    }
+
+    .shadow-icon { filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)); }
+    .tracking-tighter { letter-spacing: -2px; }
+
+    /* Social Icons Styling */
+    .social-btn {
+        width: 45px; height: 45px;
+        display: flex; align-items: center; justify-content: center;
+        color: white; text-decoration: none;
+        font-size: 1.2rem; transition: 0.3s;
+    }
+    .social-btn:hover { transform: translateY(-5px); opacity: 0.9; color: white; }
+    
+    .bg-facebook { background-color: #3b5998; }
+    .bg-twitter { background-color: #000; }
+    .bg-google { background-color: #72b16c; }
+    .bg-linkedin { background-color: #0077b5; }
+</style>
+
+{% endblock %}
