@@ -87,11 +87,11 @@ def login():
     if request.method == "POST":
         role = request.form.get("role")
         username = request.form.get("username")
-        password = request.form.get("password")
+        password = request.form.get("password")  # Defined as 'password'
 
+        # Fetch user by username and role
         user = db.users.find_one({
             "username": username,
-            "password": password,
             "role": role
         })
 
@@ -99,9 +99,10 @@ def login():
             # Check password based on role
             is_valid = False
             if user.get("role") == "admin":
-                is_valid = check_password_hash(user["password"], entered_password)
+                # FIXED: Use 'password' instead of 'entered_password'
+                is_valid = check_password_hash(user["password"], password)
             else:
-                is_valid = (user["password"] == entered_password)
+                is_valid = (user["password"] == password)
 
             if is_valid:
                 session["user_role"] = user["role"]
@@ -113,7 +114,6 @@ def login():
             return f"Invalid Credentials for {role.capitalize()}! <a href='/login'>Try again</a>"
 
     return render_template("login.html", message=message)
-
 
 @app.route("/logout")
 def logout():
@@ -130,27 +130,37 @@ def change_password():
         current_pass = request.form.get("current_password")
         new_pass = request.form.get("new_password")
         confirm_pass = request.form.get("confirm_password")
+        role = session.get('user_role')
 
-        # 1. Verify current password
-        user = db.users.find_one({"username": session['username'], "password": current_pass})
+        # FIXED: Fetch user by username only to verify the current password logic
+        user = db.users.find_one({"username": session['username']})
 
-        if not user:
-            return render_template("change_password.html", error="Current password is incorrect.")
+        if user:
+            # Check if current password is valid (Hash for admin, plain for others)
+            is_valid = False
+            if role == "admin":
+                is_valid = check_password_hash(user["password"], current_pass)
+            else:
+                is_valid = (user["password"] == current_pass)
 
-        if new_pass != confirm_pass:
-            return render_template("change_password.html", error="New passwords do not match.")
+            if not is_valid:
+                return render_template("change_password.html", error="Current password is incorrect.")
 
-        # 2. Update the password
-        db.users.update_one(
-            {"username": session['username']},
-            {"$set": {"password": new_pass}}
-        )
+            if new_pass != confirm_pass:
+                return render_template("change_password.html", error="New passwords do not match.")
 
-        # 3. LOGOUT LOGIC: Clear session and redirect to login
-        session.clear()
-        return redirect(url_for('login', message="Password updated! Please log in again."))
+            # Update the password
+            db.users.update_one(
+                {"username": session['username']},
+                {"$set": {"password": new_pass}}
+            )
+
+            # LOGOUT LOGIC: Clear session and redirect to login
+            session.clear()
+            return redirect(url_for('login', message="Password updated! Please log in again."))
 
     return render_template("change_password.html")
+
 # ================= DASHBOARD =================
 @app.route("/dashboard")
 def dashboard():
@@ -184,22 +194,15 @@ def clear_notifications():
 @app.route("/admission", methods=["GET", "POST"])
 def admission():
     if request.method == "POST":
-        # --- ADD THE IMAGE LOGIC HERE (START) ---
         photo_path = None
         file = request.files.get('student_photo')
         
         if file and file.filename != '':
-            # 1. Clean the filename
             filename = secure_filename(file.filename)
-            # 2. Create a unique name to avoid overwriting files
             unique_name = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
-            # 3. Save the physical file to your static/uploads folder
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
-            # 4. Set the path that the browser will use to show the image
             photo_path = f"/static/uploads/{unique_name}"
-        # --- ADD THE IMAGE LOGIC HERE (END) ---
 
-        # Now include photo_path in your dictionary
         admission_data = {
             "full_name": request.form.get("full_name"),
             "parent_name": request.form.get("parent_name"),
@@ -208,7 +211,7 @@ def admission():
             "dob": request.form.get("dob"),
             "course": request.form.get("course"),
             "address": request.form.get("address"),
-            "photo_path": photo_path, # <--- This uses the variable from above
+            "photo_path": photo_path,
             "status": "Pending",
             "viewed": False 
         }
@@ -221,12 +224,9 @@ def admission():
 @app.route("/approve_admission/<id>", methods=["POST"])
 def approve_admission(id):
     if session.get('user_role') == 'teacher':
-        # 1. Fetch the data from the 'admissions' collection
         applicant = db.admissions.find_one({"_id": ObjectId(id)})
         
         if applicant:
-            current_year = datetime.now().year # Gets 2026
-            # 2. Insert into the 'students' collection including the photo_path
             db.students.insert_one({
                 "name": applicant.get('full_name'),
                 "username": applicant.get('email'),
@@ -238,15 +238,12 @@ def approve_admission(id):
                 "dob": applicant.get('dob'),
                 "address": applicant.get('address'),
                 "parent_name": applicant.get('parent_name'),
-                "photo_path": applicant.get('photo_path'), # <--- ADD THIS LINE
+                "photo_path": applicant.get('photo_path'),
                 "admission_date": datetime.now().strftime("%Y-%m-%d")
             })
-            
-            # 3. Delete the temporary admission record
             db.admissions.delete_one({"_id": ObjectId(id)})
             
     return redirect(url_for('dashboard'))
-
 
 # ================= ATTENDANCE =================
 @app.route("/attendance")
@@ -279,7 +276,6 @@ def delete_attendance(id):
         
     record = db.attendance.find_one({"_id": ObjectId(id)})
     target_class = record.get('class') if record else None
-    
     db.attendance.delete_one({"_id": ObjectId(id)})
     
     if target_class:
@@ -318,8 +314,6 @@ def students():
     if "user_role" not in session:
         return redirect(url_for("login"))
     
-    # ... (Keep your POST logic same) ...
-
     selected_class = request.args.get("class")
     selected_batch = request.args.get("batch")
     search_query = request.args.get("search")
@@ -331,13 +325,11 @@ def students():
         else: query["batch"] = selected_batch
     if search_query: query["name"] = {"$regex": search_query, "$options": "i"}
 
-    # Final Grouped Dictionary
     grouped_students = {}
 
     if selected_class or selected_batch or search_query:
         raw_students = list(db.students.find(query))
 
-        # 1. Sort them in Python FIRST
         def get_sort_key(s):
             b = s.get('batch')
             if not b or str(b).lower() in ['none', '', 'unassigned']:
@@ -347,7 +339,6 @@ def students():
 
         raw_students.sort(key=get_sort_key)
 
-        # 2. Manual Grouping to preserve order for Jinja
         for s in raw_students:
             batch_name = s.get('batch')
             if not batch_name or str(batch_name).lower() in ['none', '', 'unassigned']:
@@ -357,7 +348,6 @@ def students():
                 grouped_students[batch_name] = []
             grouped_students[batch_name].append(s)
 
-    # BATCH LIST FOR DROPDOWN
     db_batches = db.students.distinct("batch")
     years = sorted([int(x) for x in db_batches if str(x).isdigit()], reverse=True)
     available_batches = [str(y) for y in years]
@@ -365,9 +355,8 @@ def students():
         if "Unassigned" not in available_batches: available_batches.insert(0, "Unassigned")
     
     return render_template("students.html", 
-                           grouped_students=grouped_students, # Sending dictionary
+                           grouped_students=grouped_students, 
                            batches=available_batches)
-
 
 @app.route("/delete_student/<id>")
 def delete_student(id):
@@ -392,34 +381,27 @@ def update_student():
             "roll_no": request.form.get("roll"),
             "class": cls,
             "section": request.form.get("section"),
-            "batch": str(batch) if batch else "Unassigned" # Ensure string format
+            "batch": str(batch) if batch else "Unassigned"
         }}
     )
-
-    # Redirect using the 'name' in search to instantly see the updated student
     return redirect(url_for('students', search=name))
 
-#=================student marks get ==========================
 @app.route("/get_student_performance/<name>")
 def get_student_performance(name):
     try:
         clean_search = name.strip()
-        # Ensure 'request' is imported at the top of the file
         selected_class = request.args.get('class') 
 
-        # 1. Find the student IDs
         student_query = {"name": {"$regex": clean_search, "$options": "i"}}
         if selected_class and selected_class != "":
             student_query["class"] = selected_class
 
-        # Fetch IDs and convert to strings
         students = list(db.students.find(student_query))
         student_ids = [str(s['_id']) for s in students]
 
         if not student_ids:
             return jsonify([])
 
-        # 2. Fetch marks filtered by student IDs and class
         marks_query = {"student_id": {"$in": student_ids}}
         if selected_class and selected_class != "":
             marks_query["class"] = selected_class
@@ -437,22 +419,16 @@ def get_student_performance(name):
         
         return jsonify(results)
     except Exception as e:
-        print(f"Error in get_student_performance: {e}")
         return jsonify({"error": str(e)}), 500
-
 
 @app.route("/fix_na_statuses")
 def fix_na_statuses():
-    # Update all records missing a status
-    # If marks >= 33, set to PASS. If less, set to FAIL.
     db.marks.update_many({"status": {"$exists": False}, "marks": {"$gte": "33"}}, {"$set": {"status": "PASS"}})
     db.marks.update_many({"status": {"$exists": False}, "marks": {"$lt": "33"}}, {"$set": {"status": "FAIL"}})
     return "All N/A records have been updated based on marks!"
 
-
 @app.route("/fix_old_statuses")
 def fix_old_statuses():
-    # Set anything 35+ to PASS and below to FAIL for old records
     db.marks.update_many({"status": {"$exists": False}, "marks": {"$gte": 35}}, {"$set": {"status": "PASS"}})
     db.marks.update_many({"status": {"$exists": False}, "marks": {"$lt": 35}}, {"$set": {"status": "FAIL"}})
     return "Old records updated!"
@@ -462,11 +438,10 @@ def student_profile(id):
     if "user_role" not in session:
         return redirect(url_for("login"))
 
-    # 1. Fetch Student Basic Details
     student = db.students.find_one({"_id": ObjectId(id)})
     if not student:
         return "Student not found", 404
-    # --- PRIVACY CHECK ---
+
     user_role = session.get('user_role')
     username = session.get('username')
 
@@ -475,15 +450,10 @@ def student_profile(id):
             return "Access Denied: You can only view your own profile.", 403
             
     elif user_role == 'parent':
-        # Check if the logged-in parent's username matches the parent_username field
         if username != student.get('parent_username'):
             return "Access Denied: You can only view your child's profile.", 403
-    # --- END PRIVACY CHECK ---
 
-    # 3. Fetch Marks History
     marks = list(db.marks.find({"student_id": id}).sort("exam",1))
-
-    # 4. Calculate Attendance Percentage
     total_days = db.attendance.count_documents({"student_name": student['name']})
     present_days = db.attendance.count_documents({"student_name": student['name'], "status": "Present"})
     
@@ -491,19 +461,12 @@ def student_profile(id):
     if total_days > 0:
         attendance_pct = round((present_days / total_days) * 100, 2)
 
-    return render_template(
-        "student_details.html", 
-        student=student, 
-        marks=marks, 
-        attendance_pct=attendance_pct,
-        total_days=total_days
-    )
+    return render_template("student_details.html", student=student, marks=marks, attendance_pct=attendance_pct, total_days=total_days)
 
 @app.route("/update_student_full", methods=["POST"])
 def update_student_full():
     if session.get('user_role') == 'teacher':
         student_id = request.form.get("id")
-        
         updated_data = {
             "name": request.form.get("name"),
             "username": request.form.get("username"),
@@ -515,8 +478,7 @@ def update_student_full():
             "dob": request.form.get("dob"),
             "email": request.form.get("email"),
             "phone": request.form.get("phone"),
-            "address": request.form.get("address"),
-            "batch":request.form.get("batch")
+            "address": request.form.get("address")
         }
         
         file = request.files.get('profile_photo')
@@ -531,58 +493,32 @@ def update_student_full():
         return redirect(url_for('student_profile', id=student_id))
     return redirect(url_for('login'))
 
-
 @app.route("/bulk_promote", methods=["POST"])
 def bulk_promote():
     if session.get("user_role") != "teacher":
         return "Unauthorized", 403
-
     source_class = request.form.get("source_class")
     new_batch = request.form.get("new_batch")
-
     if source_class and new_batch:
-        # update_many finds all matches and updates them at once
-        result = db.students.update_many(
-            {"class": source_class},
-            {"$set": {"batch": new_batch}}
-        )
+        result = db.students.update_many({"class": source_class}, {"$set": {"batch": new_batch}})
         message = f"Successfully moved {result.modified_count} students to Batch {new_batch}!"
         return redirect(url_for('students', message=message))
-    
     return redirect(url_for('students', error="Invalid selection"))
 
 # ================= MARKS =================
 @app.route("/marks", methods=["GET", "POST"])
 def marks():
-    if "user_role" not in session: 
-        return redirect(url_for("login"))
-    
+    if "user_role" not in session: return redirect(url_for("login"))
     if request.method == "POST":
-        if session.get("user_role") != "teacher": 
-            return "Unauthorized", 403
-        
+        if session.get("user_role") != "teacher": return "Unauthorized", 403
         student_ids = request.form.getlist('student_ids')
         marks_values = request.form.getlist('marks_list')
         status_values = request.form.getlist('status_list')
         subject = request.form.get("subject")
         class_name = request.form.get("class")
         exam = request.form.get("exam")
-
-        records = []
-        for i in range(len(student_ids)):
-            if i < len(marks_values) and marks_values[i]:
-                records.append({
-                    "student_id": student_ids[i],
-                    "class": class_name,
-                    "subject": subject,
-                    "marks": marks_values[i],
-                    "status":status_values[i],
-                    "exam": exam
-                })
-        
-        if records:
-            db.marks.insert_many(records)
-            
+        records = [{"student_id": student_ids[i], "class": class_name, "subject": subject, "marks": marks_values[i], "status": status_values[i], "exam": exam} for i in range(len(student_ids)) if i < len(marks_values) and marks_values[i]]
+        if records: db.marks.insert_many(records)
         return redirect(url_for("marks", class_no=class_name, subject=subject))
 
     selected_class = request.args.get("class_no")
@@ -590,12 +526,9 @@ def marks():
     query = {}
     if selected_class: query["class"] = selected_class
     if selected_subject: query["subject"] = selected_subject
-
     marks_list = list(db.marks.find(query)) if query else []
     students_map = {str(s["_id"]): s["name"] for s in db.students.find()}
-    for m in marks_list:
-        m["student_name"] = students_map.get(m["student_id"], "Unknown")
-
+    for m in marks_list: m["student_name"] = students_map.get(m["student_id"], "Unknown")
     return render_template("marks.html", marks_list=marks_list, selected_class=selected_class, selected_subject=selected_subject)
 
 @app.route("/delete_mark/<id>")
@@ -606,48 +539,24 @@ def delete_mark(id):
 
 @app.route("/update_marks", methods=["POST"])
 def update_marks():
-    if session.get("user_role") != "teacher": 
-        return "Unauthorized", 403
-    
+    if session.get("user_role") != "teacher": return "Unauthorized", 403
     mark_id = request.form.get("id")
     class_val = request.form.get("class") 
-    
-    db.marks.update_one(
-        {"_id": ObjectId(mark_id)},
-        {"$set": {
-            "subject": request.form.get("subject"),
-            "marks": request.form.get("marks"),
-            "exam": request.form.get("exam"),
-            "status": request.form.get("status")
-        }}
-    )
+    db.marks.update_one({"_id": ObjectId(mark_id)}, {"$set": {"subject": request.form.get("subject"), "marks": request.form.get("marks"), "exam": request.form.get("exam"), "status": request.form.get("status")}})
     return redirect(url_for("marks", class_no=class_val))
 
 # ================= TIMETABLE =================
 @app.route("/timetable", methods=["GET","POST"])
 def timetable():
     if "user_role" not in session: return redirect(url_for("login"))
-    
     if request.method == "POST":
         if session.get("user_role") != "teacher": return "Unauthorized", 403
-        db.timetable.insert_one({
-            "class": request.form["class"],
-            "time": request.form["time"],
-            "monday": request.form["monday"],
-            "tuesday": request.form["tuesday"],
-            "wednesday": request.form["wednesday"],
-            "thursday": request.form["thursday"],
-            "friday": request.form["friday"]
-        })
+        db.timetable.insert_one({"class": request.form["class"], "time": request.form["time"], "monday": request.form["monday"], "tuesday": request.form["tuesday"], "wednesday": request.form["wednesday"], "thursday": request.form["thursday"], "friday": request.form["friday"]})
         return redirect(url_for("timetable", class_name=request.form["class"]))
 
     selected_class = request.args.get("class_name")
-    classes = [str(i) for i in range(1,11)]
     timetable_data = list(db.timetable.find({"class": selected_class})) if selected_class else []
-    return render_template("timetable.html", 
-                           classes=classes, 
-                           selected_class=selected_class, 
-                           timetable=timetable_data)
+    return render_template("timetable.html", classes=[str(i) for i in range(1,11)], selected_class=selected_class, timetable=timetable_data)
 
 @app.route("/delete_timetable/<id>")
 def delete_timetable(id):
@@ -662,26 +571,13 @@ def update_timetable():
     if session.get("user_role") != "teacher": return "Unauthorized", 403
     timetable_id = request.form.get("id")
     class_val = request.form.get("class")
-    db.timetable.update_one(
-        {"_id": ObjectId(timetable_id)},
-        {"$set": {
-            "class": class_val,
-            "time": request.form.get("time"),
-            "monday": request.form.get("monday"),
-            "tuesday": request.form.get("tuesday"),
-            "wednesday": request.form.get("wednesday"),
-            "thursday": request.form.get("thursday"),
-            "friday": request.form.get("friday")
-        }}
-    )
+    db.timetable.update_one({"_id": ObjectId(timetable_id)}, {"$set": {"class": class_val, "time": request.form.get("time"), "monday": request.form.get("monday"), "tuesday": request.form.get("tuesday"), "wednesday": request.form.get("wednesday"), "thursday": request.form.get("thursday"), "friday": request.form.get("friday")}})
     return redirect(url_for("timetable", class_name=class_val))
 
 # ================= SUPPORT =================
 @app.route("/teacher/support")
 def teacher_support():
-    if session.get("user_role") != "teacher":
-        return "403 Forbidden - Teachers only", 403
-
+    if session.get("user_role") != "teacher": return "403 Forbidden", 403
     messages = list(db.support_messages.find().sort("_id", -1))
     return render_template("teacher_support.html", messages=messages)
 
@@ -689,10 +585,7 @@ def teacher_support():
 def respond_support(id):
     if session.get('user_role') == 'teacher':
         response_text = request.form.get("response")
-        db.support_messages.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": {"response": response_text, "status": "replied"}}
-        )
+        db.support_messages.update_one({"_id": ObjectId(id)}, {"$set": {"response": response_text, "status": "replied"}})
     return redirect(url_for('teacher_support'))
 
 @app.route("/delete_support/<id>")
@@ -704,20 +597,15 @@ def delete_support(id):
 # ================= API & EXTRAS =================
 @app.route("/get_students/<class_no>")
 def get_students(class_no):
-    # Get batch from query parameters, e.g., /get_students/3?batch=2026
     batch = request.args.get('batch')
-    
     query = {"class": class_no}
-    if batch and batch != "":
-        query["batch"] = batch
-
+    if batch and batch != "": query["batch"] = batch
     students_cursor = db.students.find(query)
     return jsonify([{"id": str(s["_id"]), "name": s["name"]} for s in students_cursor])
 
 @app.route('/library')
 def library():
-    resources = db.resources.find() 
-    return render_template('library.html', resources=resources)
+    return render_template('library.html', resources=db.resources.find())
 
 @app.route('/careers')
 def careers():
@@ -725,76 +613,42 @@ def careers():
 
 @app.route('/apply', methods=['POST'])
 def apply():
-    application_data = {
-        "name": request.form.get("name"),
-        "position": request.form.get("position"),
-        "timestamp": datetime.now()
-    }
-    db.applications.insert_one(application_data)
+    db.applications.insert_one({"name": request.form.get("name"), "position": request.form.get("position"), "timestamp": datetime.now()})
     return redirect(url_for('careers'))
 
 # ================= ADMIN MANAGEMENT =================
 @app.route("/admin/manage_users", methods=["GET", "POST"])
 def manage_users():
-    if session.get('user_role') != 'admin':
-        return "Unauthorized Access", 403
-
+    if session.get('user_role') != 'admin': return "Unauthorized Access", 403
     if request.method == "POST":
         new_username = request.form.get("username")
         new_password = request.form.get("password")
         assigned_role = request.form.get("role")
-
-        if db.users.find_one({"username": new_username}):
-            return f"User '{new_username}' already exists! <a href='/admin/manage_users'>Back</a>"
-
-        db.users.insert_one({
-            "username": new_username,
-            "password": new_password,
-            "role": assigned_role,
-            "created_at": datetime.now()
-        })
+        if not db.users.find_one({"username": new_username}):
+            db.users.insert_one({"username": new_username, "password": new_password, "role": assigned_role, "created_at": datetime.now()})
         return redirect(url_for('manage_users'))
-
-    users_list = list(db.users.find())
-    return render_template("admin_manage.html", users=users_list)
+    return render_template("admin_manage.html", users=list(db.users.find()))
 
 @app.route("/delete_user/<id>")
 def delete_user(id):
-    if session.get('user_role') == 'admin':
-        db.users.delete_one({"_id": ObjectId(id)})
+    if session.get('user_role') == 'admin': db.users.delete_one({"_id": ObjectId(id)})
     return redirect(url_for('manage_users'))
 
 #========= FIx database ===========================
 @app.route("/fix_database")
 def fix_database():
-    # This finds every student missing the 'batch' field and sets it to '2026'
-    result = db.students.update_many(
-        {"batch": {"$exists": False}}, 
-        {"$set": {"batch": "2026"}}
-    )
+    result = db.students.update_many({"batch": {"$exists": False}}, {"$set": {"batch": "2026"}})
     return f"Updated {result.modified_count} students to Batch 2026!"
 
-#-------------- batches ------------------------------------
 @app.route("/assign_batches")
 def assign_batches():
-    # Example: Moves all unassigned students to Batch 2025
-    db.students.update_many(
-        {"batch": {"$exists": False}}, 
-        {"$set": {"batch": "2025"}}
-    )
+    db.students.update_many({"batch": {"$exists": False}}, {"$set": {"batch": "2025"}})
     return "Existing students moved to Batch 2025!"
 
-#============ debug-batch ===================================
 @app.route("/debug_batch")
 def debug_batch():
-    # This sets all current students to Batch 2025
     db.students.update_many({}, {"$set": {"batch": "2025"}})
     return "All students are now Batch 2025. The filter should now work!"
 
-# if __name__=="__main__":
-#     app.run(debug=True)
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+if __name__=="__main__":
+    app.run(debug=True)
