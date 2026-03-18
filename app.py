@@ -1,8 +1,10 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.utils import secure_filename
+from flask_mail import Mail, Message
 from werkzeug.security import check_password_hash
 from pymongo import MongoClient
+from dotenv import load_dotenv
 from bson.objectid import ObjectId
 from datetime import datetime
 
@@ -27,6 +29,59 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 
 # Make sure the folder exists when the app starts
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# 2. ASSIGN the configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
+
+# 3. Define the UPLOAD_FOLDER path
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+
+# 1. LOAD the variables from .env first
+load_dotenv()
+# 4. CREATE the folder using the config we just set
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# 2. Update the Respond Route
+@app.route("/respond_support", methods=["POST"])
+def respond_support():
+    if session.get("user_role") != "teacher":
+        return "Unauthorized", 403
+
+    message_id = request.form.get("message_id")
+    user_email = request.form.get("user_email")
+    user_name = request.form.get("user_name")
+    teacher_response = request.form.get("response")
+
+    # Corrected 'support_inbox' to 'teacher_support'
+    if not teacher_response:
+        return redirect(url_for('teacher_support', error="Response cannot be empty"))
+
+    try:
+        # Send the Email
+        msg = Message(
+            subject=f"Reply to your Support Ticket: {user_name}",
+            recipients=[user_email],
+            body=f"Hello {user_name},\n\nRegarding your message: '{request.form.get('original_msg')}'\n\nOur Response:\n{teacher_response}\n\nBest regards,\nSouth Point School Administration"
+        )
+        mail.send(msg)
+
+        # Update Database (Mark as Read/Replied)
+        db.support_messages.update_one(
+            {"_id": ObjectId(message_id)},
+            {"$set": {"status": "replied", "response": teacher_response}}
+        )
+
+        # Corrected 'support_inbox' to 'teacher_support'
+        return redirect(url_for('teacher_support', message="Response sent successfully to " + user_email))
+
+    except Exception as e:
+        print(f"Mail Error: {e}")
+        # Corrected 'support_inbox' to 'teacher_support'
+        return redirect(url_for('teacher_support', error="Failed to send email. Check configuration."))
 
 # ================= INSTITUTIONAL PAGES =================
 @app.route("/")
@@ -581,12 +636,12 @@ def teacher_support():
     messages = list(db.support_messages.find().sort("_id", -1))
     return render_template("teacher_support.html", messages=messages)
 
-@app.route("/respond_support/<id>", methods=["POST"])
-def respond_support(id):
-    if session.get('user_role') == 'teacher':
-        response_text = request.form.get("response")
-        db.support_messages.update_one({"_id": ObjectId(id)}, {"$set": {"response": response_text, "status": "replied"}})
-    return redirect(url_for('teacher_support'))
+# @app.route("/respond_support/<id>", methods=["POST"])
+# def respond_support(id):
+#     if session.get('user_role') == 'teacher':
+#         response_text = request.form.get("response")
+#         db.support_messages.update_one({"_id": ObjectId(id)}, {"$set": {"response": response_text, "status": "replied"}})
+#     return redirect(url_for('teacher_support'))
 
 @app.route("/delete_support/<id>")
 def delete_support(id):
