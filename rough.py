@@ -87,11 +87,11 @@ def login():
     if request.method == "POST":
         role = request.form.get("role")
         username = request.form.get("username")
-        password = request.form.get("password")
+        entered_password = request.form.get("password")
 
+        # Fetch user by username and role
         user = db.users.find_one({
             "username": username,
-            "password": password,
             "role": role
         })
 
@@ -147,7 +147,6 @@ def change_password():
 
         # 3. LOGOUT LOGIC: Clear session and redirect to login
         session.clear()
-        # We use a query parameter to show a success message on the login page
         return redirect(url_for('login', message="Password updated! Please log in again."))
 
     return render_template("change_password.html")
@@ -185,22 +184,15 @@ def clear_notifications():
 @app.route("/admission", methods=["GET", "POST"])
 def admission():
     if request.method == "POST":
-        # --- ADD THE IMAGE LOGIC HERE (START) ---
         photo_path = None
         file = request.files.get('student_photo')
         
         if file and file.filename != '':
-            # 1. Clean the filename
             filename = secure_filename(file.filename)
-            # 2. Create a unique name to avoid overwriting files
             unique_name = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
-            # 3. Save the physical file to your static/uploads folder
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
-            # 4. Set the path that the browser will use to show the image
             photo_path = f"/static/uploads/{unique_name}"
-        # --- ADD THE IMAGE LOGIC HERE (END) ---
 
-        # Now include photo_path in your dictionary
         admission_data = {
             "full_name": request.form.get("full_name"),
             "parent_name": request.form.get("parent_name"),
@@ -209,7 +201,7 @@ def admission():
             "dob": request.form.get("dob"),
             "course": request.form.get("course"),
             "address": request.form.get("address"),
-            "photo_path": photo_path, # <--- This uses the variable from above
+            "photo_path": photo_path,
             "status": "Pending",
             "viewed": False 
         }
@@ -222,12 +214,9 @@ def admission():
 @app.route("/approve_admission/<id>", methods=["POST"])
 def approve_admission(id):
     if session.get('user_role') == 'teacher':
-        # 1. Fetch the data from the 'admissions' collection
         applicant = db.admissions.find_one({"_id": ObjectId(id)})
         
         if applicant:
-            current_year = datetime.now().year # Gets 2026
-            # 2. Insert into the 'students' collection including the photo_path
             db.students.insert_one({
                 "name": applicant.get('full_name'),
                 "username": applicant.get('email'),
@@ -239,11 +228,9 @@ def approve_admission(id):
                 "dob": applicant.get('dob'),
                 "address": applicant.get('address'),
                 "parent_name": applicant.get('parent_name'),
-                "photo_path": applicant.get('photo_path'), # <--- ADD THIS LINE
+                "photo_path": applicant.get('photo_path'),
                 "admission_date": datetime.now().strftime("%Y-%m-%d")
             })
-            
-            # 3. Delete the temporary admission record
             db.admissions.delete_one({"_id": ObjectId(id)})
             
     return redirect(url_for('dashboard'))
@@ -280,7 +267,6 @@ def delete_attendance(id):
         
     record = db.attendance.find_one({"_id": ObjectId(id)})
     target_class = record.get('class') if record else None
-    
     db.attendance.delete_one({"_id": ObjectId(id)})
     
     if target_class:
@@ -319,8 +305,6 @@ def students():
     if "user_role" not in session:
         return redirect(url_for("login"))
     
-    # ... (Keep your POST logic same) ...
-
     selected_class = request.args.get("class")
     selected_batch = request.args.get("batch")
     search_query = request.args.get("search")
@@ -332,13 +316,11 @@ def students():
         else: query["batch"] = selected_batch
     if search_query: query["name"] = {"$regex": search_query, "$options": "i"}
 
-    # Final Grouped Dictionary
     grouped_students = {}
 
     if selected_class or selected_batch or search_query:
         raw_students = list(db.students.find(query))
 
-        # 1. Sort them in Python FIRST
         def get_sort_key(s):
             b = s.get('batch')
             if not b or str(b).lower() in ['none', '', 'unassigned']:
@@ -348,7 +330,6 @@ def students():
 
         raw_students.sort(key=get_sort_key)
 
-        # 2. Manual Grouping to preserve order for Jinja
         for s in raw_students:
             batch_name = s.get('batch')
             if not batch_name or str(batch_name).lower() in ['none', '', 'unassigned']:
@@ -358,7 +339,6 @@ def students():
                 grouped_students[batch_name] = []
             grouped_students[batch_name].append(s)
 
-    # BATCH LIST FOR DROPDOWN
     db_batches = db.students.distinct("batch")
     years = sorted([int(x) for x in db_batches if str(x).isdigit()], reverse=True)
     available_batches = [str(y) for y in years]
@@ -366,7 +346,7 @@ def students():
         if "Unassigned" not in available_batches: available_batches.insert(0, "Unassigned")
     
     return render_template("students.html", 
-                           grouped_students=grouped_students, # Sending dictionary
+                           grouped_students=grouped_students, 
                            batches=available_batches)
 
 
@@ -393,34 +373,27 @@ def update_student():
             "roll_no": request.form.get("roll"),
             "class": cls,
             "section": request.form.get("section"),
-            "batch": str(batch) if batch else "Unassigned" # Ensure string format
+            "batch": str(batch) if batch else "Unassigned"
         }}
     )
-
-    # Redirect using the 'name' in search to instantly see the updated student
     return redirect(url_for('students', search=name))
 
-#=================student marks get ==========================
 @app.route("/get_student_performance/<name>")
 def get_student_performance(name):
     try:
         clean_search = name.strip()
-        # Ensure 'request' is imported at the top of the file
         selected_class = request.args.get('class') 
 
-        # 1. Find the student IDs
         student_query = {"name": {"$regex": clean_search, "$options": "i"}}
         if selected_class and selected_class != "":
             student_query["class"] = selected_class
 
-        # Fetch IDs and convert to strings
         students = list(db.students.find(student_query))
         student_ids = [str(s['_id']) for s in students]
 
         if not student_ids:
             return jsonify([])
 
-        # 2. Fetch marks filtered by student IDs and class
         marks_query = {"student_id": {"$in": student_ids}}
         if selected_class and selected_class != "":
             marks_query["class"] = selected_class
@@ -444,8 +417,6 @@ def get_student_performance(name):
 
 @app.route("/fix_na_statuses")
 def fix_na_statuses():
-    # Update all records missing a status
-    # If marks >= 33, set to PASS. If less, set to FAIL.
     db.marks.update_many({"status": {"$exists": False}, "marks": {"$gte": "33"}}, {"$set": {"status": "PASS"}})
     db.marks.update_many({"status": {"$exists": False}, "marks": {"$lt": "33"}}, {"$set": {"status": "FAIL"}})
     return "All N/A records have been updated based on marks!"
@@ -453,7 +424,6 @@ def fix_na_statuses():
 
 @app.route("/fix_old_statuses")
 def fix_old_statuses():
-    # Set anything 35+ to PASS and below to FAIL for old records
     db.marks.update_many({"status": {"$exists": False}, "marks": {"$gte": 35}}, {"$set": {"status": "PASS"}})
     db.marks.update_many({"status": {"$exists": False}, "marks": {"$lt": 35}}, {"$set": {"status": "FAIL"}})
     return "Old records updated!"
@@ -463,11 +433,10 @@ def student_profile(id):
     if "user_role" not in session:
         return redirect(url_for("login"))
 
-    # 1. Fetch Student Basic Details
     student = db.students.find_one({"_id": ObjectId(id)})
     if not student:
         return "Student not found", 404
-    # --- PRIVACY CHECK ---
+
     user_role = session.get('user_role')
     username = session.get('username')
 
@@ -476,15 +445,11 @@ def student_profile(id):
             return "Access Denied: You can only view your own profile.", 403
             
     elif user_role == 'parent':
-        # Check if the logged-in parent's username matches the parent_username field
         if username != student.get('parent_username'):
             return "Access Denied: You can only view your child's profile.", 403
-    # --- END PRIVACY CHECK ---
 
-    # 3. Fetch Marks History
     marks = list(db.marks.find({"student_id": id}).sort("exam",1))
 
-    # 4. Calculate Attendance Percentage
     total_days = db.attendance.count_documents({"student_name": student['name']})
     present_days = db.attendance.count_documents({"student_name": student['name'], "status": "Present"})
     
@@ -516,8 +481,7 @@ def update_student_full():
             "dob": request.form.get("dob"),
             "email": request.form.get("email"),
             "phone": request.form.get("phone"),
-            "address": request.form.get("address"),
-            "batch":request.form.get("batch")
+            "address": request.form.get("address")
         }
         
         file = request.files.get('profile_photo')
@@ -542,7 +506,6 @@ def bulk_promote():
     new_batch = request.form.get("new_batch")
 
     if source_class and new_batch:
-        # update_many finds all matches and updates them at once
         result = db.students.update_many(
             {"class": source_class},
             {"$set": {"batch": new_batch}}
@@ -705,9 +668,7 @@ def delete_support(id):
 # ================= API & EXTRAS =================
 @app.route("/get_students/<class_no>")
 def get_students(class_no):
-    # Get batch from query parameters, e.g., /get_students/3?batch=2026
     batch = request.args.get('batch')
-    
     query = {"class": class_no}
     if batch and batch != "":
         query["batch"] = batch
@@ -768,7 +729,6 @@ def delete_user(id):
 #========= FIx database ===========================
 @app.route("/fix_database")
 def fix_database():
-    # This finds every student missing the 'batch' field and sets it to '2026'
     result = db.students.update_many(
         {"batch": {"$exists": False}}, 
         {"$set": {"batch": "2026"}}
@@ -778,7 +738,6 @@ def fix_database():
 #-------------- batches ------------------------------------
 @app.route("/assign_batches")
 def assign_batches():
-    # Example: Moves all unassigned students to Batch 2025
     db.students.update_many(
         {"batch": {"$exists": False}}, 
         {"$set": {"batch": "2025"}}
@@ -788,13 +747,8 @@ def assign_batches():
 #============ debug-batch ===================================
 @app.route("/debug_batch")
 def debug_batch():
-    # This sets all current students to Batch 2025
     db.students.update_many({}, {"$set": {"batch": "2025"}})
     return "All students are now Batch 2025. The filter should now work!"
-
-# if __name__=="__main__":
-#     app.run(debug=True)
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
