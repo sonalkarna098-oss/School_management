@@ -148,11 +148,9 @@ def change_password():
 
         # 3. LOGOUT LOGIC: Clear session and redirect to login
         session.clear()
-        # We use a query parameter to show a success message on the login page
         return redirect(url_for('login', message="Password updated! Please log in again."))
 
     return render_template("change_password.html")
-
 # ================= DASHBOARD =================
 @app.route("/dashboard")
 def dashboard():
