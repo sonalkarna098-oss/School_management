@@ -81,17 +81,18 @@ def delete_calendar_event(id):
     return redirect(url_for('calendar'))
 
 # ================= AUTHENTICATION =================
+# ================= AUTHENTICATION =================
 @app.route("/login", methods=["GET", "POST"])
 def login():
     message = request.args.get('message')
     if request.method == "POST":
         role = request.form.get("role")
         username = request.form.get("username")
-        password = request.form.get("password")
+        password = request.form.get("password") # This is your variable
 
+        # Fetch user by username and role
         user = db.users.find_one({
             "username": username,
-            "password": password,
             "role": role
         })
 
@@ -99,9 +100,11 @@ def login():
             # Check password based on role
             is_valid = False
             if user.get("role") == "admin":
-                is_valid = check_password_hash(user["password"], entered_password)
+                # Use password variable here
+                is_valid = check_password_hash(user["password"], password)
             else:
-                is_valid = (user["password"] == entered_password)
+                # Use password variable here
+                is_valid = (user["password"] == password)
 
             if is_valid:
                 session["user_role"] = user["role"]
@@ -113,6 +116,7 @@ def login():
             return f"Invalid Credentials for {role.capitalize()}! <a href='/login'>Try again</a>"
 
     return render_template("login.html", message=message)
+
 
 @app.route("/logout")
 def logout():
