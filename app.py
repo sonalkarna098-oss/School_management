@@ -5,6 +5,7 @@ from flask_mail import Mail, Message
 from werkzeug.security import check_password_hash
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from bson import ObjectId
 from bson.objectid import ObjectId
 from datetime import datetime
 
@@ -30,7 +31,11 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 # Make sure the folder exists when the app starts
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# 2. ASSIGN the configuration
+# 1. LOAD environment variables
+load_dotenv()
+
+# 2. SET Email Configuration
+app.secret_key = os.getenv('SECRET_KEY')
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -38,50 +43,63 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 
-# 3. Define the UPLOAD_FOLDER path
+# 3. SET Upload Configuration
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 
-# 1. LOAD the variables from .env first
-load_dotenv()
-# 4. CREATE the folder using the config we just set
+# 4. NOW create the folder (Order matters!)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-# 2. Update the Respond Route
+mail = Mail(app)
+
 @app.route("/respond_support", methods=["POST"])
 def respond_support():
-    if session.get("user_role") != "teacher":
-        return "Unauthorized", 403
+    # 1. Check if the user is actually a teacher
+    user_role = session.get("user_role")
+    
+    # This prevents the 403 error by sending you to login instead
+    if not user_role or str(user_role).lower() != "teacher":
+        return redirect(url_for('login', error="Please log in as a teacher to respond."))
 
+    # 2. Extract form data
     message_id = request.form.get("message_id")
     user_email = request.form.get("user_email")
     user_name = request.form.get("user_name")
+    original_msg = request.form.get("original_msg")
     teacher_response = request.form.get("response")
 
-    # Corrected 'support_inbox' to 'teacher_support'
     if not teacher_response:
         return redirect(url_for('teacher_support', error="Response cannot be empty"))
 
     try:
-        # Send the Email
+        # 3. Create the Email
         msg = Message(
-            subject=f"Reply to your Support Ticket: {user_name}",
+            subject=f"Support Reply: {user_name}",
             recipients=[user_email],
-            body=f"Hello {user_name},\n\nRegarding your message: '{request.form.get('original_msg')}'\n\nOur Response:\n{teacher_response}\n\nBest regards,\nSouth Point School Administration"
+            body=f"Hello {user_name},\n\n"
+                 f"Regarding your message: '{original_msg}'\n\n"
+                 f"Our Response:\n{teacher_response}\n\n"
+                 f"Best regards,\nSouth Point School Administration"
         )
+        
+        # 4. Send the Email
         mail.send(msg)
 
-        # Update Database (Mark as Read/Replied)
+        # 5. Update Database status
         db.support_messages.update_one(
             {"_id": ObjectId(message_id)},
-            {"$set": {"status": "replied", "response": teacher_response}}
+            {"$set": {
+                "status": "replied", 
+                "response": teacher_response
+            }}
         )
 
-        # Corrected 'support_inbox' to 'teacher_support'
-        return redirect(url_for('teacher_support', message="Response sent successfully to " + user_email))
+        return redirect(url_for('teacher_support', message="Response sent successfully!"))
 
     except Exception as e:
-        print(f"Mail Error: {e}")
-        # Corrected 'support_inbox' to 'teacher_support'
-        return redirect(url_for('teacher_support', error="Failed to send email. Check configuration."))
+        # Check your VS Code terminal for this specific message!
+        print(f"--- MAIL ERROR START ---")
+        print(e)
+        print(f"--- MAIL ERROR END ---")
+        return redirect(url_for('teacher_support', error="Email failed. Check your App Password."))
 
 # ================= INSTITUTIONAL PAGES =================
 @app.route("/")
