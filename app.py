@@ -49,41 +49,38 @@ app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 # 4. NOW create the folder (Order matters!)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 mail = Mail(app)
-
 @app.route("/respond_support", methods=["POST"])
 def respond_support():
-    # 1. Check if the user is actually a teacher
-    user_role = session.get("user_role")
-    
-    # This prevents the 403 error by sending you to login instead
-    if not user_role or str(user_role).lower() != "teacher":
-        return redirect(url_for('login', error="Please log in as a teacher to respond."))
+    # 1. Security Check
+    if str(session.get("user_role")).lower() != "teacher":
+        return redirect(url_for('login', error="Please log in as a teacher"))
 
-    # 2. Extract form data
-    message_id = request.form.get("message_id")
+    # 2. Extract Data (Checks both Form and URL)
+    # This fixes the "id=..." issue from your screenshot
+    message_id = request.form.get("message_id") or request.args.get("id")
     user_email = request.form.get("user_email")
     user_name = request.form.get("user_name")
     original_msg = request.form.get("original_msg")
     teacher_response = request.form.get("response")
 
-    if not teacher_response:
-        return redirect(url_for('teacher_support', error="Response cannot be empty"))
+    # Debugging: These will show up in your Render Application Logs
+    print(f"DEBUG: Processing response for ID: {message_id}")
+    print(f"DEBUG: Emailing: {user_email}")
+
+    if not message_id or not teacher_response:
+        return redirect(url_for('teacher_support', error="Missing data or empty response"))
 
     try:
-        # 3. Create the Email
+        # 3. Create and Send Email
         msg = Message(
             subject=f"Support Reply: {user_name}",
             recipients=[user_email],
-            body=f"Hello {user_name},\n\n"
-                 f"Regarding your message: '{original_msg}'\n\n"
-                 f"Our Response:\n{teacher_response}\n\n"
-                 f"Best regards,\nSouth Point School Administration"
+            body=f"Hello {user_name},\n\nRegarding: '{original_msg}'\n\nResponse: {teacher_response}\n\nBest regards,\nSouth Point School"
         )
-        
-        # 4. Send the Email
         mail.send(msg)
 
-        # 5. Update Database status
+        # 4. Update Database
+        # Ensure 'db' is defined at the top of your app.py
         db.support_messages.update_one(
             {"_id": ObjectId(message_id)},
             {"$set": {
@@ -95,12 +92,11 @@ def respond_support():
         return redirect(url_for('teacher_support', message="Response sent successfully!"))
 
     except Exception as e:
-        # Check your VS Code terminal for this specific message!
-        print(f"--- MAIL ERROR START ---")
-        print(e)
-        print(f"--- MAIL ERROR END ---")
-        return redirect(url_for('teacher_support', error="Email failed. Check your App Password."))
-
+        # This is what you will see in Render Logs if it fails
+        print(f"DEPLOYMENT ERROR: {str(e)}")
+        return redirect(url_for('teacher_support', error=f"System Error: {str(e)}"))
+    
+    
 # ================= INSTITUTIONAL PAGES =================
 @app.route("/")
 def index():
