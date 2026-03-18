@@ -133,26 +133,35 @@ def change_password():
         current_pass = request.form.get("current_password")
         new_pass = request.form.get("new_password")
         confirm_pass = request.form.get("confirm_password")
+        role = session.get('user_role')
 
-        # 1. Verify current password
-        user = db.users.find_one({"username": session['username'], "password": current_pass})
+        # 1. Fetch user by username only
+        user = db.users.find_one({"username": session['username']})
 
-        if not user:
-            return render_template("change_password.html", error="Current password is incorrect.")
+        if user:
+            # 2. Verify current password based on role
+            is_valid = False
+            if role == "admin":
+                is_valid = check_password_hash(user["password"], current_pass)
+            else:
+                is_valid = (user["password"] == current_pass)
 
-        if new_pass != confirm_pass:
-            return render_template("change_password.html", error="New passwords do not match.")
+            if not is_valid:
+                return render_template("change_password.html", error="Current password is incorrect.")
 
-        # 2. Update the password
-        db.users.update_one(
-            {"username": session['username']},
-            {"$set": {"password": new_pass}}
-        )
+            if new_pass != confirm_pass:
+                return render_template("change_password.html", error="New passwords do not match.")
 
-        # 3. LOGOUT LOGIC: Clear session and redirect to login
-        session.clear()
-        # We use a query parameter to show a success message on the login page
-        return redirect(url_for('login', message="Password updated! Please log in again."))
+            # 3. Update the password
+            # NOTE: If you want the new admin password to be hashed, 
+            # you would use generate_password_hash(new_pass) here.
+            db.users.update_one(
+                {"username": session['username']},
+                {"$set": {"password": new_pass}}
+            )
+
+            session.clear()
+            return redirect(url_for('login', message="Password updated! Please log in again."))
 
     return render_template("change_password.html")
 
