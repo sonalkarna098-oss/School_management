@@ -24,19 +24,19 @@
 
                     <div class="d-flex align-items-start gap-2">
                         <form action="{{ url_for('respond_support') }}" method="POST" class="flex-grow-1">
-                            <input type="hidden" name="message_id" value="{{ msg._id }}">
-                            <input type="hidden" name="user_email" value="{{ msg.email }}">
-                            <input type="hidden" name="user_name" value="{{ msg.full_name }}">
-                            <input type="hidden" name="original_msg" value="{{ msg.message }}">
+    <input type="hidden" name="message_id" value="{{ msg._id }}">
+    <input type="hidden" name="user_email" value="{{ msg.email }}">
+    <input type="hidden" name="user_name" value="{{ msg.full_name }}">
+    <input type="hidden" name="original_msg" value="{{ msg.message }}">
 
-                            <div class="input-group">
-                                <textarea name="response" class="form-control" rows="2" 
-                                          placeholder="Type your response here..." required></textarea>
-                                <button class="btn btn-dark px-4 fw-bold" type="submit">
-                                    Send <i class="bi bi-send-fill ms-2"></i>
-                                </button>
-                            </div>
-                        </form>
+    <div class="input-group">
+        <textarea name="response" class="form-control" rows="2" 
+                  placeholder="Type your response here..." required></textarea>
+        <button class="btn btn-dark px-4 fw-bold" type="submit">
+            Send <i class="bi bi-send-fill ms-2"></i>
+        </button>
+    </div>
+</form>
                         
                         <a href="{{ url_for('delete_support', id=msg._id|string) }}" 
                            class="btn btn-outline-danger shadow-sm" 
