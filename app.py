@@ -2,33 +2,20 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
-from werkzeug.security import check_password_hash
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from bson import ObjectId
 from datetime import datetime
 
-app = Flask(__name__)
-
-# 1. LOAD environment variables
+# 1. LOAD environment variables FIRST (Before anything else!)
 load_dotenv()
 
-# 2. SET Configurations (Define the "Key" first)
+app = Flask(__name__)
+
+# 2. SET CONFIGURATIONS (Define keys BEFORE using them)
 app.secret_key = os.getenv('SECRET_KEY', 'super_secret_school_key')
 
-# --- SET Upload Configuration HERE ---
-app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
-
-# 3. NOW you can create the folder (Order matters!)
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-# 4. Continue with Email/DB Setup
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-# ... rest of your codes
-
-# 2. SET Email Configuration
-app.secret_key = os.getenv('SECRET_KEY','super_secert_school_key')
+# Email Setup
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -36,23 +23,23 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 
-# 3. SET Upload Configuration
+# Upload Setup
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
-app.config['ALLOWED_EXTENSIONS'] = {'png','jpg', 'jpeg'}
-# 4. NOW create the folder (Order matters!)
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
+
+# 3. NOW CREATE FOLDERS AND INITIALIZE SERVICES
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 mail = Mail(app)
-# ================= DATABASE =================
-atlas_uri = os.getenv("MONGO_URI")
 
+# 4. DATABASE CONNECTION (Using the loaded MONGO_URI)
+atlas_uri = os.getenv("MONGO_URI")
 try:
     client = MongoClient(atlas_uri)
     db = client["school"]
-    # Verify connection
     client.admin.command('ping')
-    print("Successfully connected to MongoDB Atlas (Database: management)")
+    print("Successfully connected to MongoDB Atlas")
 except Exception as e:
-    print(f"Error connecting to MongoDB Atlas: {e}")
+    print(f"CRITICAL DATABASE ERROR: {e}")
 
 @app.route("/respond_support", methods=["POST"])
 def respond_support():
