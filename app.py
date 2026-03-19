@@ -47,47 +47,33 @@ def respond_support():
     if str(session.get("user_role")).lower() != "teacher":
         return redirect(url_for('login', error="Please log in as a teacher"))
 
-    # 2. Extract Data (Checks both Form and URL)
-    # This fixes the "id=..." issue from your screenshot
+    # 2. Extract Data
     message_id = request.form.get("message_id") or request.args.get("id")
     user_email = request.form.get("user_email")
     user_name = request.form.get("user_name")
     original_msg = request.form.get("original_msg")
     teacher_response = request.form.get("response")
 
-    # Debugging: These will show up in your Render Application Logs
-    print(f"DEBUG: Processing response for ID: {message_id}")
-    print(f"DEBUG: Emailing: {user_email}")
-
-    if not message_id or not teacher_response:
-        return redirect(url_for('teacher_support', error="Missing data or empty response"))
-
     try:
         # 3. Create and Send Email
         msg = Message(
             subject=f"Support Reply: {user_name}",
             recipients=[user_email],
-            body=f"Hello {user_name},\n\nRegarding: '{original_msg}'\n\nResponse: {teacher_response}\n\nBest regards,\nSouth Point School"
+            body=f"Hello {user_name},\n\nRegarding: '{original_msg}'\n\nResponse: {teacher_response}"
         )
         mail.send(msg)
 
         # 4. Update Database
-        # Ensure 'db' is defined at the top of your app.py
         db.support_messages.update_one(
             {"_id": ObjectId(message_id)},
-            {"$set": {
-                "status": "replied", 
-                "response": teacher_response
-            }}
+            {"$set": {"status": "replied", "response": teacher_response}}
         )
 
         return redirect(url_for('teacher_support', message="Response sent successfully!"))
 
     except Exception as e:
-        # This is what you will see in Render Logs if it fails
-        print(f"DEPLOYMENT ERROR: {str(e)}")
-        return redirect(url_for('teacher_support', error=f"System Error: {str(e)}"))
-    
+        # THIS IS THE KEY: It will show the REAL error on your screen instead of 'Internal Server Error'
+        return f"<h1>Detailed Error Info:</h1><p>{str(e)}</p><a href='/teacher/support'>Go Back</a>"    
     
 # ================= INSTITUTIONAL PAGES =================
 @app.route("/")
