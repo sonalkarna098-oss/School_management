@@ -1,21 +1,20 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from bson import ObjectId
 from datetime import datetime
 
-# 1. LOAD environment variables FIRST (Before anything else!)
+# 1. LOAD environment variables FIRST
 load_dotenv()
 
 app = Flask(__name__)
 
-# 2. SET CONFIGURATIONS (Define keys BEFORE using them)
+# 2. SET CONFIGURATIONS
 app.secret_key = os.getenv('SECRET_KEY', 'super_secret_school_key')
 
-# Email Setup
+# --- PRODUCTION EMAIL CONFIG (Port 465 for Render) ---
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = False
@@ -24,15 +23,16 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 
-# Upload Setup
+# --- UPLOAD CONFIGURATION ---
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
-
-# 3. NOW CREATE FOLDERS AND INITIALIZE SERVICES
+# Create folder after UPLOAD_FOLDER is defined
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# 3. INITIALIZE SERVICES
 mail = Mail(app)
 
-# 4. DATABASE CONNECTION (Using the loaded MONGO_URI)
+# 4. DATABASE CONNECTION
 atlas_uri = os.getenv("MONGO_URI")
 try:
     client = MongoClient(atlas_uri)
@@ -41,6 +41,9 @@ try:
     print("Successfully connected to MongoDB Atlas")
 except Exception as e:
     print(f"CRITICAL DATABASE ERROR: {e}")
+
+# ================= ROUTES =================
+# ... your respond_support and other routes go here ...
 
 @app.route("/respond_support", methods=["POST"])
 def respond_support():
