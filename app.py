@@ -6,12 +6,42 @@ from werkzeug.security import check_password_hash
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from bson import ObjectId
-from bson.objectid import ObjectId
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "super_secret_school_key"
 
+# 1. LOAD environment variables
+load_dotenv()
+
+# 2. SET Configurations (Define the "Key" first)
+app.secret_key = os.getenv('SECRET_KEY', 'super_secret_school_key')
+
+# --- SET Upload Configuration HERE ---
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
+
+# 3. NOW you can create the folder (Order matters!)
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# 4. Continue with Email/DB Setup
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+# ... rest of your codes
+
+# 2. SET Email Configuration
+app.secret_key = os.getenv('SECRET_KEY','super_secert_school_key')
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
+
+# 3. SET Upload Configuration
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+app.config['ALLOWED_EXTENSIONS'] = {'png','jpg', 'jpeg'}
+# 4. NOW create the folder (Order matters!)
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+mail = Mail(app)
 # ================= DATABASE =================
 atlas_uri = os.getenv("MONGO_URI")
 
@@ -24,31 +54,6 @@ try:
 except Exception as e:
     print(f"Error connecting to MongoDB Atlas: {e}")
 
-# Setup safe folders for pictures
-app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
-
-# Make sure the folder exists when the app starts
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-# 1. LOAD environment variables
-load_dotenv()
-
-# 2. SET Email Configuration
-app.secret_key = os.getenv('SECRET_KEY')
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
-
-# 3. SET Upload Configuration
-app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
-
-# 4. NOW create the folder (Order matters!)
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-mail = Mail(app)
 @app.route("/respond_support", methods=["POST"])
 def respond_support():
     # 1. Security Check
