@@ -37,10 +37,9 @@ mail = Mail(app)
 
 # 4. DATABASE CONNECTION
 # =========================
-
 class DummyCollection:
     def find(self, *args, **kwargs):
-        return []
+        return self   # ✅ return self instead of []
 
     def find_one(self, *args, **kwargs):
         return None
@@ -61,11 +60,13 @@ class DummyCollection:
         return None
 
     def sort(self, *args, **kwargs):
-        return self
+        return self   # ✅ allow chaining
 
     def limit(self, *args, **kwargs):
-        return self
+        return self   # ✅ allow chaining
 
+    def __iter__(self):
+        return iter([])   # ✅ so list() works
 
 class DummyDB:
     def __getattr__(self, name):
