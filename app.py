@@ -34,26 +34,66 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # 3. INITIALIZE SERVICES
 mail = Mail(app)
 
+
 # 4. DATABASE CONNECTION
-# 4. DATABASE CONNECTION
-atlas_uri = os.getenv("MONGO_URI")
+# =========================
+
+class DummyCollection:
+    def find(self, *args, **kwargs):
+        return []
+
+    def find_one(self, *args, **kwargs):
+        return None
+
+    def insert_one(self, *args, **kwargs):
+        return None
+
+    def insert_many(self, *args, **kwargs):
+        return None
+
+    def update_one(self, *args, **kwargs):
+        return None
+
+    def delete_one(self, *args, **kwargs):
+        return None
+
+    def delete_many(self, *args, **kwargs):
+        return None
+
+    def sort(self, *args, **kwargs):
+        return self
+
+    def limit(self, *args, **kwargs):
+        return self
+
+
+class DummyDB:
+    def __getattr__(self, name):
+        return DummyCollection()
+
+
+# =========================
+# REAL + FALLBACK DB SETUP
+# =========================
 client = None
-db = None # Initialize to None so the attribute always exists for Mocks
+db = None  # always exists
 
 try:
-    if not atlas_uri:
-        raise ValueError("MONGO_URI environment variable is not set!")
-        
-    client = MongoClient(atlas_uri)
-    db = client["school"]
-    
-    # Optional: Ping the database to verify connection
-    client.admin.command('ping')
-    print("Successfully connected to MongoDB Atlas")
-    
+    atlas_uri = os.getenv("MONGO_URI")
+
+    if atlas_uri:
+        client = MongoClient(atlas_uri)
+        db = client["school"]
+        client.admin.command('ping')
+        print("✅ Connected to MongoDB Atlas")
+    else:
+        print("⚠️ MONGO_URI not set → Using DummyDB")
+        db = DummyDB()
+
 except Exception as e:
-    print(f"CRITICAL DATABASE ERROR: {e}")
-    # In a real app, you might want to use a dummy/local DB here 
+    print(f"❌ DB ERROR: {e}")
+    print("⚠️ Falling back to DummyDB")
+    db = DummyDB()
     # if you want the app to still "start" without a cloud connection.
 
 # ================= ROUTES =================
