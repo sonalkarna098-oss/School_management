@@ -1,7 +1,9 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_mail import Mail, Message
+from werkzeug.security import check_password_hash, generate_password_hash
 from pymongo import MongoClient
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from bson import ObjectId
 from datetime import datetime
@@ -33,14 +35,26 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 mail = Mail(app)
 
 # 4. DATABASE CONNECTION
+# 4. DATABASE CONNECTION
 atlas_uri = os.getenv("MONGO_URI")
+client = None
+db = None # Initialize to None so the attribute always exists for Mocks
+
 try:
+    if not atlas_uri:
+        raise ValueError("MONGO_URI environment variable is not set!")
+        
     client = MongoClient(atlas_uri)
     db = client["school"]
+    
+    # Optional: Ping the database to verify connection
     client.admin.command('ping')
     print("Successfully connected to MongoDB Atlas")
+    
 except Exception as e:
     print(f"CRITICAL DATABASE ERROR: {e}")
+    # In a real app, you might want to use a dummy/local DB here 
+    # if you want the app to still "start" without a cloud connection.
 
 # ================= ROUTES =================
 # ... your respond_support and other routes go here ...
@@ -135,22 +149,24 @@ def delete_calendar_event(id):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     message = request.args.get('message')
+
     if request.method == "POST":
         role = request.form.get("role")
         username = request.form.get("username")
-        password = request.form.get("password")  # Defined as 'password'
+        password = request.form.get("password")
 
-        # Fetch user by username and role
-        user = db.users.find_one({
-            "username": username,
-            "role": role
-        })
+        try:
+            user = db.users.find_one({
+                "username": username,
+                "role": role
+            })
+        except Exception:
+            return "Database Error! Please try again later.", 500
 
         if user:
-            # Check password based on role
             is_valid = False
+
             if user.get("role") == "admin":
-                # FIXED: Use 'password' instead of 'entered_password'
                 is_valid = check_password_hash(user["password"], password)
             else:
                 is_valid = (user["password"] == password)
@@ -160,12 +176,13 @@ def login():
                 session["username"] = user["username"]
                 return redirect(url_for("dashboard"))
             else:
-                return f"Invalid Credentials for {role.capitalize()}! <a href='/login'>Try again</a>"
+                safe_role = role.capitalize() if role else "User"
+                return f"Invalid Credentials for {safe_role}! <a href='/login'>Try again</a>"
         else:
-            return f"Invalid Credentials for {role.capitalize()}! <a href='/login'>Try again</a>"
+            safe_role = role.capitalize() if role else "User"
+            return f"Invalid Credentials for {safe_role}! <a href='/login'>Try again</a>"
 
     return render_template("login.html", message=message)
-
 @app.route("/logout")
 def logout():
     session.clear()
@@ -504,7 +521,7 @@ def student_profile(id):
         if username != student.get('parent_username'):
             return "Access Denied: You can only view your child's profile.", 403
 
-    marks = list(db.marks.find({"student_id": id}).sort("exam",1))
+    marks = list(db.marks.find({"student_id": id}).sort([("exam",1)]))
     total_days = db.attendance.count_documents({"student_name": student['name']})
     present_days = db.attendance.count_documents({"student_name": student['name'], "status": "Present"})
     
