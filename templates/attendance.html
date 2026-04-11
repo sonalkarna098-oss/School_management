@@ -71,9 +71,13 @@
         </form>
     </div>
 
-    <div class="card table-card bg-white shadow-sm mb-5">
-        <div class="card-header bg-white py-3 border-0">
-            <h5 class="fw-bold mb-0 text-dark">Recent Records {% if selected_class %}(Class {{selected_class}}){% endif %}</h5>
+    {% for date, records in attendance_list|groupby('date')|reverse %}
+    <div class="card table-card bg-white shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-calendar-event me-2 text-success"></i> {{ date }}
+            </h5>
+            <span class="badge bg-dark rounded-pill">{{ records|length }} Students</span>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -81,17 +85,15 @@
                     <tr>
                         <th class="ps-4">Student Name</th>
                         <th>Class</th>
-                        <th>Date</th>
                         <th>Status</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for a in attendance_list %}
+                    {% for a in records %}
                     <tr>
                         <td class="ps-4 fw-bold text-dark">{{ a.student_name }}</td>
                         <td>Class {{ a.class }}</td>
-                        <td>{{ a.date }}</td>
                         <td>
                             {% if a.status == "Present" %}
                                 <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">PRESENT</span>
@@ -109,18 +111,18 @@
                             {% endif %}
                         </td>
                     </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            No records found. Select a class to filter.
-                        </td>
-                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-</div>
+    {% else %}
+    <div class="card table-card bg-white shadow-sm mb-5 p-5 text-center text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        No records found. Select a class to filter.
+    </div>
+    {% endfor %}
+    </div>
 
 {% if session['user_role'] == 'teacher' %}
 <div class="modal fade" id="attendanceModal" tabindex="-1" aria-hidden="true">
@@ -167,12 +169,10 @@
 {% endif %}
 
 <script>
-// Logic to load students dynamically when class is selected in the modal
 document.getElementById('modalClassSelect').addEventListener('change', function() {
     const className = this.value;
     const container = document.getElementById('studentListContainer');
     
-    // Display loading state
     container.innerHTML = `
         <div class="text-center py-4">
             <div class="spinner-border text-success" role="status"></div>
@@ -205,10 +205,6 @@ document.getElementById('modalClassSelect').addEventListener('change', function(
             
             html += '</div>';
             container.innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            container.innerHTML = '<p class="text-center text-danger py-4">Error loading data. Check server connection.</p>';
         });
 });
 </script>

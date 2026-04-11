@@ -1,139 +1,33 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from flask_mail import Mail, Message
-from werkzeug.security import check_password_hash, generate_password_hash
-from pymongo import MongoClient
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
-from bson import ObjectId
+from werkzeug.security import check_password_hash
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 from datetime import datetime
 
-# 1. LOAD environment variables FIRST
-load_dotenv()
-
 app = Flask(__name__)
+app.secret_key = "super_secret_school_key"
 
-# 2. SET CONFIGURATIONS
-app.secret_key = os.getenv('SECRET_KEY', 'super_secret_school_key')
-
-# --- PRODUCTION EMAIL CONFIG (Port 465 for Render) ---
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
-
-# --- UPLOAD CONFIGURATION ---
-app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
-# Create folder after UPLOAD_FOLDER is defined
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-# 3. INITIALIZE SERVICES
-mail = Mail(app)
-
-
-# 4. DATABASE CONNECTION
-# =========================
-class DummyCollection:
-    def find(self, *args, **kwargs):
-        return self   # ✅ return self instead of []
-
-    def find_one(self, *args, **kwargs):
-        return None
-
-    def insert_one(self, *args, **kwargs):
-        return None
-
-    def insert_many(self, *args, **kwargs):
-        return None
-
-    def update_one(self, *args, **kwargs):
-        return None
-
-    def delete_one(self, *args, **kwargs):
-        return None
-
-    def delete_many(self, *args, **kwargs):
-        return None
-
-    def sort(self, *args, **kwargs):
-        return self   # ✅ allow chaining
-
-    def limit(self, *args, **kwargs):
-        return self   # ✅ allow chaining
-
-    def __iter__(self):
-        return iter([])   # ✅ so list() works
-
-class DummyDB:
-    def __getattr__(self, name):
-        return DummyCollection()
-
-
-# =========================
-# REAL + FALLBACK DB SETUP
-# =========================
-client = None
-db = None  # always exists
+# ================= DATABASE =================
+atlas_uri = os.getenv("MONGO_URI")
 
 try:
-    atlas_uri = os.getenv("MONGO_URI")
-
-    if atlas_uri:
-        client = MongoClient(atlas_uri)
-        db = client["school"]
-        client.admin.command('ping')
-        print("✅ Connected to MongoDB Atlas")
-    else:
-        print("⚠️ MONGO_URI not set → Using DummyDB")
-        db = DummyDB()
-
+    client = MongoClient(atlas_uri)
+    db = client["school"]
+    # Verify connection
+    client.admin.command('ping')
+    print("Successfully connected to MongoDB Atlas (Database: management)")
 except Exception as e:
-    print(f"❌ DB ERROR: {e}")
-    print("⚠️ Falling back to DummyDB")
-    db = DummyDB()
-    # if you want the app to still "start" without a cloud connection.
+    print(f"Error connecting to MongoDB Atlas: {e}")
 
-# ================= ROUTES =================
-# ... your respond_support and other routes go here ...
+# Setup safe folders for pictures
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 
-@app.route("/respond_support", methods=["POST"])
-def respond_support():
-    # 1. Security Check
-    if str(session.get("user_role")).lower() != "teacher":
-        return redirect(url_for('login', error="Please log in as a teacher"))
+# Make sure the folder exists when the app starts
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    # 2. Extract Data
-    message_id = request.form.get("message_id") or request.args.get("id")
-    user_email = request.form.get("user_email")
-    user_name = request.form.get("user_name")
-    original_msg = request.form.get("original_msg")
-    teacher_response = request.form.get("response")
-
-    try:
-        # 3. Create and Send Email
-        msg = Message(
-            subject=f"Support Reply: {user_name}",
-            recipients=[user_email],
-            body=f"Hello {user_name},\n\nRegarding: '{original_msg}'\n\nResponse: {teacher_response}"
-        )
-        mail.send(msg)
-
-        # 4. Update Database
-        db.support_messages.update_one(
-            {"_id": ObjectId(message_id)},
-            {"$set": {"status": "replied", "response": teacher_response}}
-        )
-
-        return redirect(url_for('teacher_support', message="Response sent successfully!"))
-
-    except Exception as e:
-        # THIS IS THE KEY: It will show the REAL error on your screen instead of 'Internal Server Error'
-        return f"<h1>Detailed Error Info:</h1><p>{str(e)}</p><a href='/teacher/support'>Go Back</a>"    
-    
 # ================= INSTITUTIONAL PAGES =================
 @app.route("/")
 def index():
@@ -190,46 +84,35 @@ def delete_calendar_event(id):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     message = request.args.get('message')
-
     if request.method == "POST":
         role = request.form.get("role")
+        # Ensure username matches the case in Atlas (e.g., uppercase emails)
         username = request.form.get("username")
-        password = request.form.get("password")
+        entered_password = request.form.get("password")
 
-        try:
-            user = db.users.find_one({
-                "username": username,
-                "role": role
-            })
-        except Exception:
-            return "Database Error! Please try again later.", 500
+        # Safe Role check to prevent .capitalize() crash
+        safe_role = role.capitalize() if role else "User"
+
+        # Find user by exact username and role
+        user = db.users.find_one({
+            "username": username,
+            "role": role
+        })
 
         if user:
-            is_valid = False
-
-            if user.get("role") == "admin":
-                is_valid = check_password_hash(user["password"], password)
-            else:
-                is_valid = (user["password"] == password)
-
-            if is_valid:
+            # REMOVED HASHING: Direct plain text comparison for ALL roles
+            if user["password"] == entered_password:
                 session["user_role"] = user["role"]
                 session["username"] = user["username"]
                 return redirect(url_for("dashboard"))
             else:
-                safe_role = role.capitalize() if role else "User"
                 return f"Invalid Credentials for {safe_role}! <a href='/login'>Try again</a>"
         else:
-            safe_role = role.capitalize() if role else "User"
             return f"Invalid Credentials for {safe_role}! <a href='/login'>Try again</a>"
 
     return render_template("login.html", message=message)
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("login"))
 
-#=================change_password -----------------
+# ================= CHANGE PASSWORD =================
 @app.route("/change_password", methods=["GET", "POST"])
 def change_password():
     if "username" not in session:
@@ -239,36 +122,36 @@ def change_password():
         current_pass = request.form.get("current_password")
         new_pass = request.form.get("new_password")
         confirm_pass = request.form.get("confirm_password")
-        role = session.get('user_role')
-
-        # FIXED: Fetch user by username only to verify the current password logic
+        
+        # Fetch user from database
         user = db.users.find_one({"username": session['username']})
 
         if user:
-            # Check if current password is valid (Hash for admin, plain for others)
-            is_valid = False
-            if role == "admin":
-                is_valid = check_password_hash(user["password"], current_pass)
-            else:
-                is_valid = (user["password"] == current_pass)
-
-            if not is_valid:
+            # REMOVED HASHING: Plain text verification of current password
+            if user["password"] != current_pass:
                 return render_template("change_password.html", error="Current password is incorrect.")
 
             if new_pass != confirm_pass:
                 return render_template("change_password.html", error="New passwords do not match.")
 
-            # Update the password
+            # Update the database with the new plain text password
             db.users.update_one(
                 {"username": session['username']},
                 {"$set": {"password": new_pass}}
             )
 
-            # LOGOUT LOGIC: Clear session and redirect to login
+            # Clear session to force fresh login with new password
             session.clear()
             return redirect(url_for('login', message="Password updated! Please log in again."))
 
     return render_template("change_password.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 
 # ================= DASHBOARD =================
 @app.route("/dashboard")
@@ -562,7 +445,7 @@ def student_profile(id):
         if username != student.get('parent_username'):
             return "Access Denied: You can only view your child's profile.", 403
 
-    marks = list(db.marks.find({"student_id": id}).sort([("exam",1)]))
+    marks = list(db.marks.find({"student_id": id}).sort("exam",1))
     total_days = db.attendance.count_documents({"student_name": student['name']})
     present_days = db.attendance.count_documents({"student_name": student['name'], "status": "Present"})
     
@@ -690,12 +573,12 @@ def teacher_support():
     messages = list(db.support_messages.find().sort("_id", -1))
     return render_template("teacher_support.html", messages=messages)
 
-# @app.route("/respond_support/<id>", methods=["POST"])
-# def respond_support(id):
-#     if session.get('user_role') == 'teacher':
-#         response_text = request.form.get("response")
-#         db.support_messages.update_one({"_id": ObjectId(id)}, {"$set": {"response": response_text, "status": "replied"}})
-#     return redirect(url_for('teacher_support'))
+@app.route("/respond_support/<id>", methods=["POST"])
+def respond_support(id):
+    if session.get('user_role') == 'teacher':
+        response_text = request.form.get("response")
+        db.support_messages.update_one({"_id": ObjectId(id)}, {"$set": {"response": response_text, "status": "replied"}})
+    return redirect(url_for('teacher_support'))
 
 @app.route("/delete_support/<id>")
 def delete_support(id):
@@ -759,5 +642,9 @@ def debug_batch():
     db.students.update_many({}, {"$set": {"batch": "2025"}})
     return "All students are now Batch 2025. The filter should now work!"
 
-if __name__=="__main__":
-    app.run(debug=True)
+
+if __name__ == "__main__":
+    # Render uses the 'PORT' environment variable to listen for traffic
+    port = int(os.environ.get("PORT", 5000))
+    # Disable debug mode for production security
+    app.run(host='0.0.0.0', port=port)
